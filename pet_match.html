@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#f582ae" />
+<title>댕냥구조대 - 나에게 맞는 유기동물 찾기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+    background: linear-gradient(135deg, #fef6e4 0%, #f3d2c1 100%);
+    color: #001858;
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header {
+    text-align: center;
+    padding: 40px 20px 30px;
+    background: linear-gradient(135deg, #f582ae 0%, #ffd6a5 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    position: relative;
+  }
+  header h1 { font-size: 2.4rem; margin-bottom: 8px; }
+  header p { font-size: 1.05rem; opacity: 0.95; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    background: #fffefb;
+    padding: 6px;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,24,88,0.06);
+  }
+  .tab {
+    flex: 1;
+    padding: 10px 14px;
+    text-align: center;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    color: #001858;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, #f582ae 0%, #ff8c69 100%);
+    color: #fff;
+  }
+
+  .card {
+    background: #fffefb;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,24,88,0.08);
+    margin-bottom: 30px;
+  }
+  .card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    border-left: 5px solid #f582ae;
+    padding-left: 12px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-weight: 600; font-size: 0.95rem; }
+  .field select, .field input[type="text"] {
+    padding: 12px 14px;
+    border: 2px solid #e8d8c4;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: #fff;
+    transition: border-color 0.2s;
+    min-height: 44px;
+  }
+  .field select:focus, .field input:focus {
+    outline: none;
+    border-color: #f582ae;
+  }
+
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border: 2px solid #e8d8c4;
+    border-radius: 20px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    user-select: none;
+    transition: all 0.2s;
+    min-height: 40px;
+  }
+  .chip input { display: none; }
+  .chip:hover { border-color: #f582ae; }
+  .chip.active {
+    background: #f582ae;
+    color: #fff;
+    border-color: #f582ae;
+  }
+
+  .priority-section { margin-top: 20px; }
+  .priority-section > p {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 25px;
+    flex-wrap: wrap;
+  }
+  button {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    min-height: 44px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #f582ae 0%, #ff8c69 100%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(245,130,174,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(245,130,174,0.5); }
+  .btn-secondary {
+    background: #fff;
+    color: #001858;
+    border: 2px solid #e8d8c4;
+  }
+  .btn-secondary:hover { background: #f9f2e8; }
+
+  #results, #favoritesView { display: none; }
+  .result-summary {
+    background: #fef6e4;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    border-left: 4px solid #f582ae;
+    font-size: 0.95rem;
+  }
+  .pet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .pet-card {
+    background: #fffefb;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(0,24,88,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .pet-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,24,88,0.15);
+  }
+  .match-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255,255,255,0.95);
+    color: #001858;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 2;
+  }
+  .match-badge.high { background: #f582ae; color: #fff; }
+  .match-badge.mid { background: #ffd6a5; color: #001858; }
+
+  .fav-btn {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 2;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+  .fav-btn:hover { transform: scale(1.1); }
+  .fav-btn.active { background: #ff4d6d; color: #fff; }
+
+  .pet-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    background: #f3d2c1;
+  }
+  .pet-info { padding: 16px 18px 20px; }
+  .pet-info h3 { font-size: 1.25rem; margin-bottom: 4px; }
+  .pet-meta {
+    color: #6b6b6b;
+    font-size: 0.88rem;
+    margin-bottom: 10px;
+  }
+  .pet-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+  .tag {
+    background: #fef6e4;
+    color: #001858;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    border: 1px solid #f3d2c1;
+  }
+  .pet-shelter {
+    font-size: 0.85rem;
+    color: #444;
+    padding-top: 10px;
+    border-top: 1px dashed #e8d8c4;
+  }
+  .pet-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .pet-actions button {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    min-height: 36px;
+  }
+  .btn-share {
+    background: #fef6e4;
+    color: #001858;
+    border: 1px solid #f3d2c1;
+  }
+  .btn-call {
+    background: #4cd964;
+    color: #fff;
+  }
+  .reasons {
+    background: #fef6e4;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 0.85rem;
+  }
+  .reasons strong { color: #f582ae; }
+
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b6b6b;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b6b6b;
+  }
+  .spinner {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    border: 4px solid #f3d2c1;
+    border-top-color: #f582ae;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #001858;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .data-source {
+    text-align: center;
+    font-size: 0.82rem;
+    color: #6b6b6b;
+    margin-top: 30px;
+    padding: 15px;
+  }
+  .data-source a { color: #f582ae; }
+
+  @media (max-width: 768px) {
+    header { padding: 30px 16px 24px; }
+    header h1 { font-size: 1.8rem; }
+    header p { font-size: 0.95rem; }
+    .container { padding: 20px 14px; }
+    .card { padding: 20px 18px; border-radius: 14px; }
+    .card h2 { font-size: 1.2rem; }
+    .form-grid { grid-template-columns: 1fr; gap: 14px; }
+    .actions { flex-direction: column; }
+    button { width: 100%; }
+    .pet-grid { grid-template-columns: 1fr; gap: 16px; }
+    .pet-img { height: 240px; }
+    .tabs { font-size: 0.85rem; }
+    .tab { padding: 10px 8px; font-size: 0.85rem; }
+  }
+  @media (max-width: 380px) {
+    header h1 { font-size: 1.5rem; }
+    .chip { font-size: 0.85rem; padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐾 댕냥구조대</h1>
+  <p>나의 라이프스타일에 꼭 맞는 유기동물 가족을 만나보세요</p>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" data-tab="match">🔍 추천 받기</button>
+    <button class="tab" data-tab="favorites">❤️ 찜한 친구 <span id="favCount"></span></button>
+  </div>
+
+  <!-- 입력 폼 / 추천 -->
+  <div id="matchView">
+    <div class="card" id="formCard">
+      <h2>나에 대해 알려주세요</h2>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>거주 지역</label>
+          <select id="region">
+            <option value="">전체</option>
+            <option value="서울">서울</option>
+            <option value="경기">경기</option>
+            <option value="인천">인천</option>
+            <option value="부산">부산</option>
+            <option value="대구">대구</option>
+            <option value="대전">대전</option>
+            <option value="광주">광주</option>
+            <option value="울산">울산</option>
+            <option value="세종">세종</option>
+            <option value="강원">강원</option>
+            <option value="충북">충북</option>
+            <option value="충남">충남</option>
+            <option value="전북">전북</option>
+            <option value="전남">전남</option>
+            <option value="경북">경북</option>
+            <option value="경남">경남</option>
+            <option value="제주">제주</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>주거 형태</label>
+          <select id="housing">
+            <option value="apartment">아파트/빌라</option>
+            <option value="house">단독주택 (마당 있음)</option>
+            <option value="studio">원룸/오피스텔</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>나의 활동량</label>
+          <select id="activity">
+            <option value="low">낮음 (실내 위주, 산책 적음)</option>
+            <option value="medium" selected>보통 (하루 1회 산책)</option>
+            <option value="high">높음 (운동/등산 자주)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>집에 비우는 시간</label>
+          <select id="awayTime">
+            <option value="short">짧음 (4시간 이하)</option>
+            <option value="medium" selected>보통 (4~8시간)</option>
+            <option value="long">긺 (8시간 이상)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>가족 구성</label>
+          <select id="family">
+            <option value="single">1인 가구</option>
+            <option value="couple">2인 가구</option>
+            <option value="kids">어린 자녀 있음</option>
+            <option value="senior">고령자 동거</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>반려 경험</label>
+          <select id="experience">
+            <option value="none">처음</option>
+            <option value="some" selected>약간 있음</option>
+            <option value="many">많음 (전문가 수준)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>선호 종류</label>
+          <select id="species">
+            <option value="any">상관없음</option>
+            <option value="dog">강아지</option>
+            <option value="cat">고양이</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>크기 선호 (강아지)</label>
+          <select id="size">
+            <option value="any">상관없음</option>
+            <option value="small">소형 (10kg 이하)</option>
+            <option value="medium">중형 (10~25kg)</option>
+            <option value="large">대형 (25kg 이상)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="priority-section">
+        <p>🌟 반려동물 선택에서 특히 중요하게 생각하는 점 (복수 선택)</p>
+        <div class="checkbox-group" id="prioritiesGroup">
+          <label class="chip"><input type="checkbox" value="quiet" /> 조용한 성격</label>
+          <label class="chip"><input type="checkbox" value="friendly" /> 사람을 잘 따름</label>
+          <label class="chip"><input type="checkbox" value="kidsafe" /> 아이와 친화적</label>
+          <label class="chip"><input type="checkbox" value="petfriendly" /> 다른 동물과 친함</label>
+          <label class="chip"><input type="checkbox" value="lowshed" /> 털 빠짐 적음</label>
+          <label class="chip"><input type="checkbox" value="trained" /> 훈련 잘 된 편</label>
+          <label class="chip"><input type="checkbox" value="healthy" /> 건강 상태 양호</label>
+          <label class="chip"><input type="checkbox" value="senior" /> 노령견/노령묘 OK</label>
+          <label class="chip"><input type="checkbox" value="special" /> 장애/특수 케어 가능</label>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" id="findBtn">🔍 나와 잘 맞는 친구 찾기</button>
+        <button class="btn-secondary" id="resetBtn">초기화</button>
+      </div>
+    </div>
+
+    <div id="results">
+      <div class="card">
+        <h2>✨ 추천 결과</h2>
+        <div class="result-summary" id="resultSummary"></div>
+        <div class="pet-grid" id="petGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 즐겨찾기 -->
+  <div id="favoritesView">
+    <div class="card">
+      <h2>❤️ 찜한 친구들</h2>
+      <div class="result-summary" id="favSummary">관심있는 친구를 하트 버튼으로 찜해보세요.</div>
+      <div class="pet-grid" id="favGrid"></div>
+    </div>
+  </div>
+
+  <p class="data-source">
+    ※ 본 서비스는 공공데이터포털 「농림축산검역본부 유기동물 조회 서비스」 OpenAPI를 기반으로 합니다.<br>
+    실제 입양 절차는 가까운 동물보호센터 또는 <a href="https://www.animal.go.kr" target="_blank" rel="noopener">동물보호관리시스템</a>을 통해 진행해주세요.
+  </p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== 샘플 데이터 (API 키 없을 때 폴백) ======
+const SAMPLE_PETS = [
+// 서울
+{id:"s1",name:"보리",species:"dog",breed:"믹스견",age:3,gender:"수컷",size:"medium",weight:14,region:"서울",shelter:"서울동물복지지원센터 마포",shelterTel:"02-300-1234",img:"https://images.unsplash.com/photo-1583511655802-41d089d2b8a1?w=600&q=70",traits:["friendly","trained","petfriendly","healthy"],activity:"medium",shedding:"medium",desc:"산책을 좋아하고 사람을 잘 따르는 온순한 믹스견. 기본 훈련 완료."},
+{id:"s2",name:"치즈",species:"cat",breed:"코리안숏헤어",age:2,gender:"암컷",size:"small",weight:4,region:"서울",shelter:"서울동물복지지원센터 구로",shelterTel:"02-857-1234",img:"https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&q=70",traits:["quiet","friendly","lowshed","healthy"],activity:"low",shedding:"low",desc:"조용하고 무릎냥이 기질의 치즈태비. 1인 가구에 적합."},
+{id:"s3",name:"콩이",species:"dog",breed:"말티즈",age:8,gender:"암컷",size:"small",weight:4,region:"서울",shelter:"서울동물복지지원센터 동대문",shelterTel:"02-2244-1234",img:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=70",traits:["quiet","friendly","lowshed","senior","trained"],activity:"low",shedding:"low",desc:"노령견이지만 건강하고 사람을 매우 좋아해요. 아파트에 적합."},
+{id:"s4",name:"루이",species:"dog",breed:"시츄",age:9,gender:"수컷",size:"small",weight:5,region:"서울",shelter:"서울동물복지지원센터 노원",shelterTel:"02-2289-1234",img:"https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=600&q=70",traits:["quiet","lowshed","senior","special"],activity:"low",shedding:"low",desc:"노령견이며 한쪽 눈이 보이지 않지만 잘 적응합니다. 차분한 성격."},
+{id:"s5",name:"하늘",species:"dog",breed:"스피츠 믹스",age:3,gender:"수컷",size:"small",weight:7,region:"서울",shelter:"서울동물복지지원센터 강서",shelterTel:"02-2600-1234",img:"https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=600&q=70",traits:["friendly","healthy"],activity:"medium",shedding:"high",desc:"활발하고 사람을 좋아하는 스피츠 믹스. 털빠짐이 있는 편."},
+{id:"s6",name:"나비",species:"cat",breed:"삼색이",age:1,gender:"암컷",size:"small",weight:3,region:"서울",shelter:"서울동물복지지원센터 은평",shelterTel:"02-388-1234",img:"https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=600&q=70",traits:["friendly","petfriendly","healthy"],activity:"high",shedding:"medium",desc:"장난기 많은 어린 삼색묘. 활동량 많고 호기심 가득."},
+{id:"s7",name:"달이",species:"dog",breed:"포메라니안",age:6,gender:"암컷",size:"small",weight:3,region:"서울",shelter:"서울동물복지지원센터 마포",shelterTel:"02-300-1234",img:"https://images.unsplash.com/photo-1560807707-8cc77767d783?w=600&q=70",traits:["friendly","trained"],activity:"medium",shedding:"high",desc:"사회성 좋은 포메라니안. 산책을 즐기며 사람을 잘 따름."},
+{id:"s8",name:"구름",species:"cat",breed:"러시안블루 믹스",age:4,gender:"수컷",size:"small",weight:5,region:"서울",shelter:"서울동물복지지원센터 마포",shelterTel:"02-300-1234",img:"https://images.unsplash.com/photo-1606214174585-fe31582dc6ee?w=600&q=70",traits:["quiet","lowshed","healthy"],activity:"low",shedding:"low",desc:"낯가림이 약간 있지만 익숙해지면 애교 많은 고양이."},
+{id:"s9",name:"뭉치",species:"dog",breed:"진돗개 믹스",age:4,gender:"수컷",size:"large",weight:20,region:"서울",shelter:"서울동물복지지원센터 성동",shelterTel:"02-2204-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy","friendly"],activity:"high",shedding:"high",desc:"충직한 성격의 진돗개 믹스. 운동량이 많이 필요해요."},
+{id:"s10",name:"초코",species:"dog",breed:"푸들 믹스",age:5,gender:"수컷",size:"small",weight:6,region:"서울",shelter:"서울동물복지지원센터 중랑",shelterTel:"02-490-1234",img:"https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=600&q=70",traits:["quiet","friendly","lowshed","kidsafe","trained"],activity:"low",shedding:"low",desc:"털빠짐이 적고 차분한 성격. 아이가 있는 가정에 잘 맞아요."},
+// 경기
+{id:"s11",name:"해피",species:"dog",breed:"비글 믹스",age:3,gender:"수컷",size:"medium",weight:12,region:"경기",shelter:"수원시동물보호소",shelterTel:"031-228-1234",img:"https://images.unsplash.com/photo-1505628346881-b72b27e84530?w=600&q=70",traits:["friendly","kidsafe","petfriendly","healthy"],activity:"high",shedding:"medium",desc:"에너지 넘치는 비글 믹스. 가족 구성원과 잘 어울려요."},
+{id:"s12",name:"별이",species:"cat",breed:"코리안숏헤어",age:4,gender:"암컷",size:"small",weight:4,region:"경기",shelter:"성남시동물보호소",shelterTel:"031-729-1234",img:"https://images.unsplash.com/photo-1606214174585-fe31582dc6ee?w=600&q=70",traits:["quiet","lowshed","healthy"],activity:"low",shedding:"low",desc:"낯가림이 있지만 익숙해지면 무릎냥. 조용한 환경을 좋아해요."},
+{id:"s13",name:"두부",species:"dog",breed:"시바이누 믹스",age:2,gender:"수컷",size:"medium",weight:10,region:"경기",shelter:"고양시동물보호소",shelterTel:"031-8075-1234",img:"https://images.unsplash.com/photo-1535930749574-1399327ce78f?w=600&q=70",traits:["friendly","healthy"],activity:"medium",shedding:"medium",desc:"호기심 많은 시바이누 믹스. 산책을 아주 좋아해요."},
+{id:"s14",name:"솜이",species:"dog",breed:"스피츠",age:5,gender:"암컷",size:"small",weight:8,region:"경기",shelter:"용인시동물보호소",shelterTel:"031-324-1234",img:"https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=600&q=70",traits:["friendly","trained"],activity:"medium",shedding:"high",desc:"하얀 털이 복슬복슬한 스피츠. 기본 훈련이 잘 되어 있어요."},
+{id:"s15",name:"코코",species:"dog",breed:"말티즈 믹스",age:7,gender:"암컷",size:"small",weight:3,region:"경기",shelter:"부천시동물보호소",shelterTel:"032-320-1234",img:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=70",traits:["quiet","friendly","lowshed"],activity:"low",shedding:"low",desc:"차분하고 온순한 말티즈 믹스. 실내 생활에 잘 적응."},
+{id:"s16",name:"모카",species:"cat",breed:"페르시안 믹스",age:3,gender:"수컷",size:"small",weight:5,region:"경기",shelter:"성남시동물보호소",shelterTel:"031-729-1234",img:"https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=600&q=70",traits:["quiet","friendly"],activity:"low",shedding:"high",desc:"장모종이라 빗질이 필요. 그 외엔 조용하고 얌전한 고양이."},
+{id:"s17",name:"라떼",species:"dog",breed:"라브라도 믹스",age:2,gender:"암컷",size:"large",weight:27,region:"경기",shelter:"파주시동물보호소",shelterTel:"031-940-1234",img:"https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?w=600&q=70",traits:["friendly","kidsafe","petfriendly","healthy"],activity:"high",shedding:"medium",desc:"활발하고 사람을 좋아하는 대형견. 넓은 공간에 적합."},
+{id:"s18",name:"땅콩",species:"dog",breed:"닥스훈트 믹스",age:6,gender:"수컷",size:"small",weight:7,region:"경기",shelter:"안양시동물보호소",shelterTel:"031-8045-1234",img:"https://images.unsplash.com/photo-1535930749574-1399327ce78f?w=600&q=70",traits:["friendly","trained"],activity:"medium",shedding:"low",desc:"긴 몸통이 귀여운 닥스훈트 믹스. 훈련이 잘 되어 있어요."},
+{id:"s19",name:"체리",species:"dog",breed:"요크셔테리어",age:4,gender:"암컷",size:"small",weight:3,region:"경기",shelter:"의정부시동물보호소",shelterTel:"031-828-1234",img:"https://images.unsplash.com/photo-1586671267731-da2cf3ceeb80?w=600&q=70",traits:["friendly","lowshed"],activity:"medium",shedding:"low",desc:"털이 잘 빠지지 않는 요크셔테리어. 작지만 에너지 넘쳐요."},
+{id:"s20",name:"바람",species:"dog",breed:"보더콜리 믹스",age:3,gender:"수컷",size:"medium",weight:16,region:"경기",shelter:"고양시동물보호소",shelterTel:"031-8075-1234",img:"https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&q=70",traits:["trained","friendly","healthy"],activity:"high",shedding:"medium",desc:"영리하고 훈련 능력이 뛰어난 보더콜리 믹스. 운동량 많이 필요."},
+// 인천
+{id:"s21",name:"나리",species:"cat",breed:"삼색이",age:1,gender:"암컷",size:"small",weight:3,region:"인천",shelter:"인천광역시 동물보호소",shelterTel:"032-440-1234",img:"https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=600&q=70",traits:["friendly","petfriendly","healthy"],activity:"high",shedding:"medium",desc:"어리고 활발한 삼색묘. 다른 고양이와도 잘 지내요."},
+{id:"s22",name:"토리",species:"dog",breed:"진돗개",age:5,gender:"수컷",size:"medium",weight:17,region:"인천",shelter:"인천 남동구 동물보호소",shelterTel:"032-453-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy","friendly"],activity:"high",shedding:"high",desc:"순종 진돗개. 주인에게 충직하며 기본 훈련 완료."},
+{id:"s23",name:"밀키",species:"dog",breed:"사모예드 믹스",age:2,gender:"암컷",size:"large",weight:24,region:"인천",shelter:"인천광역시 동물보호소",shelterTel:"032-440-1234",img:"https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=600&q=70",traits:["friendly","kidsafe","petfriendly","healthy"],activity:"high",shedding:"high",desc:"새하얀 털의 사모예드 믹스. 아이들과 잘 어울려요."},
+{id:"s24",name:"호두",species:"dog",breed:"코카스파니엘",age:4,gender:"수컷",size:"medium",weight:13,region:"인천",shelter:"인천 부평구 동물보호소",shelterTel:"032-509-1234",img:"https://images.unsplash.com/photo-1583511655802-41d089d2b8a1?w=600&q=70",traits:["friendly","kidsafe","healthy","trained"],activity:"medium",shedding:"medium",desc:"온순하고 애교 많은 코카스파니엘. 가족과 잘 어울려요."},
+{id:"s25",name:"눈송이",species:"cat",breed:"코리안숏헤어",age:3,gender:"암컷",size:"small",weight:4,region:"인천",shelter:"인천광역시 동물보호소",shelterTel:"032-440-1234",img:"https://images.unsplash.com/photo-1561948955-570b270e7c36?w=600&q=70",traits:["quiet","lowshed","healthy"],activity:"low",shedding:"low",desc:"하얀 털의 조용한 고양이. 혼자 있는 시간도 잘 보내요."},
+{id:"s26",name:"레몬",species:"dog",breed:"말티즈",age:10,gender:"수컷",size:"small",weight:3,region:"인천",shelter:"인천 미추홀구 동물보호소",shelterTel:"032-880-1234",img:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=70",traits:["quiet","lowshed","senior"],activity:"low",shedding:"low",desc:"고령이지만 건강한 말티즈. 조용한 환경을 선호해요."},
+// 부산
+{id:"s27",name:"두부",species:"cat",breed:"코리안숏헤어",age:7,gender:"수컷",size:"small",weight:5,region:"부산",shelter:"부산동물보호센터",shelterTel:"051-583-1234",img:"https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=600&q=70",traits:["quiet","friendly","senior","lowshed"],activity:"low",shedding:"low",desc:"온순한 노령묘. 사람 손길을 좋아하며 활동량이 적어요."},
+{id:"s28",name:"쿠키",species:"dog",breed:"치와와",age:7,gender:"암컷",size:"small",weight:2,region:"부산",shelter:"부산동물보호센터",shelterTel:"051-583-1234",img:"https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=600&q=70",traits:["quiet","lowshed","senior"],activity:"low",shedding:"low",desc:"작고 차분한 시니어 치와와. 1인 가구에 적합."},
+{id:"s29",name:"빛나",species:"dog",breed:"믹스견",age:2,gender:"암컷",size:"medium",weight:15,region:"부산",shelter:"부산 해운대구 동물보호소",shelterTel:"051-749-1234",img:"https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&q=70",traits:["friendly","healthy","petfriendly"],activity:"high",shedding:"medium",desc:"젊고 활발한 믹스견. 다른 강아지와도 잘 어울려요."},
+{id:"s30",name:"랑이",species:"dog",breed:"진돗개",age:6,gender:"수컷",size:"large",weight:22,region:"부산",shelter:"부산 사하구 동물보호소",shelterTel:"051-207-1234",img:"https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=70",traits:["trained","healthy"],activity:"high",shedding:"high",desc:"단단하고 충직한 진돗개. 넓은 공간과 충분한 운동이 필요."},
+{id:"s31",name:"포도",species:"cat",breed:"고등어 태비",age:2,gender:"수컷",size:"small",weight:4,region:"부산",shelter:"부산동물보호센터",shelterTel:"051-583-1234",img:"https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=600&q=70",traits:["friendly","healthy"],activity:"medium",shedding:"medium",desc:"고등어 무늬가 귀여운 젊은 수컷 묘. 활발하고 호기심 많음."},
+{id:"s32",name:"마루",species:"dog",breed:"시바이누",age:4,gender:"수컷",size:"medium",weight:12,region:"부산",shelter:"부산 연제구 동물보호소",shelterTel:"051-665-1234",img:"https://images.unsplash.com/photo-1535930749574-1399327ce78f?w=600&q=70",traits:["healthy","trained"],activity:"medium",shedding:"medium",desc:"독립적인 성격의 시바이누. 훈련이 잘 되어 있어요."},
+{id:"s33",name:"설기",species:"dog",breed:"스피츠 믹스",age:3,gender:"수컷",size:"small",weight:8,region:"부산",shelter:"부산 금정구 동물보호소",shelterTel:"051-519-1234",img:"https://images.unsplash.com/photo-1560807707-8cc77767d783?w=600&q=70",traits:["friendly","healthy"],activity:"medium",shedding:"high",desc:"하얗고 복슬한 스피츠 믹스. 활발하고 애교가 많아요."},
+{id:"s34",name:"가을",species:"cat",breed:"코리안숏헤어",age:5,gender:"암컷",size:"small",weight:4,region:"부산",shelter:"부산 동래구 동물보호소",shelterTel:"051-550-1234",img:"https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&q=70",traits:["quiet","friendly","lowshed"],activity:"low",shedding:"low",desc:"차분하고 친화적인 성묘. 집 생활에 잘 적응되어 있어요."},
+// 대구
+{id:"s35",name:"꼬마",species:"dog",breed:"포메라니안",age:6,gender:"수컷",size:"small",weight:3,region:"대구",shelter:"대구광역시 동물보호센터",shelterTel:"053-803-1234",img:"https://images.unsplash.com/photo-1560807707-8cc77767d783?w=600&q=70",traits:["friendly","trained","healthy"],activity:"medium",shedding:"high",desc:"사회성 좋은 포메라니안. 산책을 좋아해요."},
+{id:"s36",name:"달콤",species:"dog",breed:"푸들",age:4,gender:"암컷",size:"small",weight:5,region:"대구",shelter:"대구 달서구 동물보호소",shelterTel:"053-667-1234",img:"https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=600&q=70",traits:["quiet","friendly","lowshed","trained","kidsafe"],activity:"low",shedding:"low",desc:"털빠짐 없는 깔끔한 푸들. 훈련이 잘 되어 초보자에게 적합."},
+{id:"s37",name:"호박",species:"cat",breed:"노랑 태비",age:3,gender:"수컷",size:"small",weight:5,region:"대구",shelter:"대구 북구 동물보호소",shelterTel:"053-324-1234",img:"https://images.unsplash.com/photo-1574158622682-e40e69881006?w=600&q=70",traits:["friendly","healthy"],activity:"medium",shedding:"medium",desc:"노란 털의 활발한 수컷 태비. 장난감 가지고 노는 걸 좋아해요."},
+{id:"s38",name:"루나",species:"cat",breed:"코리안숏헤어",age:2,gender:"암컷",size:"small",weight:3,region:"대구",shelter:"대구 수성구 동물보호소",shelterTel:"053-666-1234",img:"https://images.unsplash.com/photo-1606214174585-fe31582dc6ee?w=600&q=70",traits:["quiet","lowshed","healthy"],activity:"low",shedding:"low",desc:"조용하고 얌전한 어린 암컷 고양이. 낯선 환경에도 잘 적응해요."},
+{id:"s39",name:"로이",species:"dog",breed:"리트리버 믹스",age:3,gender:"수컷",size:"large",weight:26,region:"대구",shelter:"대구 동구 동물보호소",shelterTel:"053-662-1234",img:"https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=70",traits:["friendly","kidsafe","petfriendly","healthy"],activity:"high",shedding:"medium",desc:"사람을 무척 좋아하는 대형견. 아이들과 놀기 좋아요."},
+{id:"s40",name:"보람",species:"dog",breed:"믹스견",age:8,gender:"수컷",size:"medium",weight:14,region:"대구",shelter:"대구 서구 동물보호소",shelterTel:"053-663-1234",img:"https://images.unsplash.com/photo-1583511655802-41d089d2b8a1?w=600&q=70",traits:["quiet","friendly","senior","trained"],activity:"low",shedding:"medium",desc:"나이 들었지만 여전히 애교 많은 믹스견 시니어."},
+// 대전
+{id:"s41",name:"미소",species:"dog",breed:"시츄",age:7,gender:"암컷",size:"small",weight:5,region:"대전",shelter:"대전광역시 동물보호센터",shelterTel:"042-270-1234",img:"https://images.unsplash.com/photo-1591768793355-74d04bb6608f?w=600&q=70",traits:["quiet","lowshed","friendly","senior"],activity:"low",shedding:"low",desc:"온순한 시니어 시츄. 조용한 가정에서 편안히 지낼 수 있어요."},
+{id:"s42",name:"봄이",species:"dog",breed:"말티즈 믹스",age:2,gender:"암컷",size:"small",weight:4,region:"대전",shelter:"대전 유성구 동물보호소",shelterTel:"042-611-1234",img:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=70",traits:["friendly","lowshed","kidsafe"],activity:"low",shedding:"low",desc:"어리고 활달한 말티즈 믹스. 아이들과 잘 어울려요."},
+{id:"s43",name:"바다",species:"dog",breed:"허스키 믹스",age:4,gender:"수컷",size:"large",weight:25,region:"대전",shelter:"대전 서구 동물보호소",shelterTel:"042-600-1234",img:"https://images.unsplash.com/photo-1586671267731-da2cf3ceeb80?w=600&q=70",traits:["friendly","healthy","petfriendly"],activity:"high",shedding:"high",desc:"파란 눈의 허스키 믹스. 운동량이 매우 많이 필요한 대형견."},
+{id:"s44",name:"달빛",species:"cat",breed:"샴 믹스",age:3,gender:"암컷",size:"small",weight:4,region:"대전",shelter:"대전 중구 동물보호소",shelterTel:"042-606-1234",img:"https://images.unsplash.com/photo-1529778873920-4da4926a72c2?w=600&q=70",traits:["quiet","lowshed","friendly"],activity:"low",shedding:"low",desc:"우아한 샴 믹스 고양이. 조용히 부르면 반응해요."},
+{id:"s45",name:"솔이",species:"dog",breed:"비글",age:5,gender:"수컷",size:"medium",weight:11,region:"대전",shelter:"대전 동구 동물보호소",shelterTel:"042-628-1234",img:"https://images.unsplash.com/photo-1505628346881-b72b27e84530?w=600&q=70",traits:["friendly","kidsafe","petfriendly"],activity:"high",shedding:"medium",desc:"코가 예민하고 활발한 비글. 넓은 공간을 좋아해요."},
+{id:"s46",name:"산이",species:"dog",breed:"진돗개 믹스",age:6,gender:"수컷",size:"medium",weight:18,region:"대전",shelter:"대전 대덕구 동물보호소",shelterTel:"042-608-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy"],activity:"high",shedding:"high",desc:"믿음직스러운 진돗개 믹스. 주인에게 충직한 성격."},
+// 광주
+{id:"s47",name:"구름",species:"cat",breed:"페르시안 믹스",age:3,gender:"수컷",size:"small",weight:5,region:"광주",shelter:"광주광역시 동물보호소",shelterTel:"062-613-1234",img:"https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=600&q=70",traits:["quiet","friendly","healthy"],activity:"low",shedding:"high",desc:"장모종이라 빗질이 필요. 그 외엔 조용하고 얌전해요."},
+{id:"s48",name:"살구",species:"dog",breed:"믹스견",age:4,gender:"암컷",size:"medium",weight:13,region:"광주",shelter:"광주 북구 동물보호소",shelterTel:"062-410-1234",img:"https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&q=70",traits:["friendly","petfriendly","healthy"],activity:"medium",shedding:"medium",desc:"살구빛 털의 온순한 믹스견. 다른 동물과도 잘 지내요."},
+{id:"s49",name:"하루",species:"dog",breed:"말티즈",age:9,gender:"수컷",size:"small",weight:3,region:"광주",shelter:"광주 서구 동물보호소",shelterTel:"062-360-1234",img:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=70",traits:["quiet","lowshed","senior","friendly"],activity:"low",shedding:"low",desc:"노령이지만 사람을 좋아하는 말티즈. 조용한 가정에 적합."},
+{id:"s50",name:"마을",species:"dog",breed:"진돗개",age:7,gender:"수컷",size:"medium",weight:19,region:"광주",shelter:"광주 남구 동물보호소",shelterTel:"062-607-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy"],activity:"high",shedding:"high",desc:"단단한 체격의 진돗개. 충성스럽고 영역 의식이 강해요."},
+{id:"s51",name:"안개",species:"cat",breed:"코리안숏헤어",age:1,gender:"암컷",size:"small",weight:3,region:"광주",shelter:"광주 광산구 동물보호소",shelterTel:"062-960-1234",img:"https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=70",traits:["friendly","petfriendly","healthy"],activity:"high",shedding:"medium",desc:"어리고 호기심 많은 코숏. 다른 고양이와 잘 어울려요."},
+{id:"s52",name:"초록",species:"dog",breed:"코카스파니엘 믹스",age:5,gender:"암컷",size:"medium",weight:12,region:"광주",shelter:"광주 동구 동물보호소",shelterTel:"062-608-1234",img:"https://images.unsplash.com/photo-1583511655802-41d089d2b8a1?w=600&q=70",traits:["friendly","trained","kidsafe"],activity:"medium",shedding:"medium",desc:"온순하고 훈련이 잘 된 코카스파니엘 믹스."},
+// 울산
+{id:"s53",name:"누리",species:"dog",breed:"진돗개",age:3,gender:"수컷",size:"medium",weight:16,region:"울산",shelter:"울산광역시 동물보호소",shelterTel:"052-229-1234",img:"https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=70",traits:["trained","healthy","friendly"],activity:"high",shedding:"high",desc:"늠름한 진돗개. 주인에게 매우 충직하고 훈련이 잘 되었어요."},
+{id:"s54",name:"이슬",species:"cat",breed:"터키시앙고라 믹스",age:2,gender:"암컷",size:"small",weight:4,region:"울산",shelter:"울산 중구 동물보호소",shelterTel:"052-290-1234",img:"https://images.unsplash.com/photo-1561948955-570b270e7c36?w=600&q=70",traits:["quiet","lowshed","friendly"],activity:"low",shedding:"low",desc:"우아한 흰 털의 앙고라 믹스. 사람을 잘 따라요."},
+{id:"s55",name:"찹쌀",species:"dog",breed:"스피츠",age:6,gender:"암컷",size:"small",weight:8,region:"울산",shelter:"울산 남구 동물보호소",shelterTel:"052-226-1234",img:"https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=600&q=70",traits:["friendly","trained"],activity:"medium",shedding:"high",desc:"새하얀 스피츠. 기본 훈련 완료, 산책을 즐겨요."},
+{id:"s56",name:"자몽",species:"dog",breed:"비글 믹스",age:4,gender:"수컷",size:"medium",weight:11,region:"울산",shelter:"울산 북구 동물보호소",shelterTel:"052-241-1234",img:"https://images.unsplash.com/photo-1505628346881-b72b27e84530?w=600&q=70",traits:["friendly","petfriendly","healthy"],activity:"high",shedding:"medium",desc:"활발한 비글 믹스. 다른 동물과 잘 지내고 에너지가 넘쳐요."},
+{id:"s57",name:"여름",species:"dog",breed:"믹스견",age:5,gender:"암컷",size:"medium",weight:15,region:"울산",shelter:"울산 동구 동물보호소",shelterTel:"052-232-1234",img:"https://images.unsplash.com/photo-1583511655802-41d089d2b8a1?w=600&q=70",traits:["friendly","healthy","kidsafe"],activity:"medium",shedding:"medium",desc:"온순하고 친화적인 믹스견. 아이들에게도 부드럽게 대해요."},
+// 세종
+{id:"s58",name:"햇살",species:"dog",breed:"골든리트리버 믹스",age:2,gender:"수컷",size:"large",weight:28,region:"세종",shelter:"세종특별자치시 동물보호소",shelterTel:"044-300-1234",img:"https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?w=600&q=70",traits:["friendly","kidsafe","petfriendly","healthy"],activity:"high",shedding:"medium",desc:"밝고 활발한 골든리트리버 믹스. 누구와도 잘 어울려요."},
+{id:"s59",name:"은빛",species:"cat",breed:"코리안숏헤어",age:4,gender:"수컷",size:"small",weight:5,region:"세종",shelter:"세종특별자치시 동물보호소",shelterTel:"044-300-1234",img:"https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=600&q=70",traits:["quiet","lowshed","healthy"],activity:"low",shedding:"low",desc:"은빛 털의 차분한 수컷 고양이. 조용하고 독립적."},
+{id:"s60",name:"한솔",species:"dog",breed:"말티즈",age:6,gender:"암컷",size:"small",weight:4,region:"세종",shelter:"세종특별자치시 동물보호소",shelterTel:"044-300-1234",img:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=70",traits:["quiet","friendly","lowshed","trained"],activity:"low",shedding:"low",desc:"훈련이 잘 된 말티즈. 아파트나 원룸에 적합해요."},
+// 강원
+{id:"s61",name:"복실",species:"dog",breed:"진돗개",age:5,gender:"암컷",size:"medium",weight:18,region:"강원",shelter:"춘천시동물보호소",shelterTel:"033-250-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy","friendly"],activity:"high",shedding:"high",desc:"주인에게 충성스러운 진돗개. 운동량이 많이 필요해요."},
+{id:"s62",name:"파도",species:"dog",breed:"허스키 믹스",age:3,gender:"수컷",size:"large",weight:23,region:"강원",shelter:"강릉시동물보호소",shelterTel:"033-660-1234",img:"https://images.unsplash.com/photo-1586671267731-da2cf3ceeb80?w=600&q=70",traits:["friendly","healthy"],activity:"high",shedding:"high",desc:"늠름한 허스키 믹스. 활동량이 많고 자유로운 성격."},
+{id:"s63",name:"밤이",species:"cat",breed:"검은 코리안숏헤어",age:2,gender:"수컷",size:"small",weight:4,region:"강원",shelter:"원주시동물보호소",shelterTel:"033-737-1234",img:"https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=70",traits:["quiet","lowshed","healthy"],activity:"medium",shedding:"low",desc:"새까만 털의 고양이. 조용하지만 가끔 장난기를 부려요."},
+{id:"s64",name:"설야",species:"dog",breed:"사모예드 믹스",age:4,gender:"암컷",size:"large",weight:22,region:"강원",shelter:"속초시동물보호소",shelterTel:"033-639-1234",img:"https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=600&q=70",traits:["friendly","kidsafe","healthy"],activity:"high",shedding:"high",desc:"눈처럼 하얀 사모예드 믹스. 아이들과 잘 놀아요."},
+{id:"s65",name:"가람",species:"dog",breed:"믹스견",age:7,gender:"수컷",size:"medium",weight:15,region:"강원",shelter:"동해시동물보호소",shelterTel:"033-530-1234",img:"https://images.unsplash.com/photo-1583511655802-41d089d2b8a1?w=600&q=70",traits:["quiet","friendly","trained"],activity:"medium",shedding:"medium",desc:"중년의 온순한 믹스견. 기본 훈련이 되어 있고 차분해요."},
+{id:"s66",name:"아침",species:"cat",breed:"삼색이",age:3,gender:"암컷",size:"small",weight:3.5,region:"강원",shelter:"춘천시동물보호소",shelterTel:"033-250-1234",img:"https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=600&q=70",traits:["friendly","healthy"],activity:"medium",shedding:"medium",desc:"상큼한 삼색묘. 사람을 따르고 사교적이에요."},
+// 충북
+{id:"s67",name:"도담",species:"dog",breed:"비글 믹스",age:2,gender:"암컷",size:"medium",weight:11,region:"충북",shelter:"청주시동물보호소",shelterTel:"043-201-1234",img:"https://images.unsplash.com/photo-1505628346881-b72b27e84530?w=600&q=70",traits:["friendly","kidsafe","petfriendly"],activity:"high",shedding:"medium",desc:"활달하고 사교적인 비글 믹스 어린 암컷."},
+{id:"s68",name:"꼬리",species:"dog",breed:"닥스훈트",age:5,gender:"수컷",size:"small",weight:7,region:"충북",shelter:"청주시동물보호소",shelterTel:"043-201-1234",img:"https://images.unsplash.com/photo-1535930749574-1399327ce78f?w=600&q=70",traits:["friendly","trained","healthy"],activity:"medium",shedding:"low",desc:"긴 몸의 닥스훈트. 훈련이 잘 되어 있고 친화적."},
+{id:"s69",name:"새벽",species:"cat",breed:"샴 믹스",age:3,gender:"암컷",size:"small",weight:4,region:"충북",shelter:"충주시동물보호소",shelterTel:"043-850-1234",img:"https://images.unsplash.com/photo-1529778873920-4da4926a72c2?w=600&q=70",traits:["quiet","lowshed","friendly"],activity:"low",shedding:"low",desc:"우아하고 조용한 샴 믹스. 고요한 가정에 어울려요."},
+{id:"s70",name:"무지개",species:"dog",breed:"시바이누 믹스",age:4,gender:"수컷",size:"medium",weight:13,region:"충북",shelter:"충주시동물보호소",shelterTel:"043-850-1234",img:"https://images.unsplash.com/photo-1535930749574-1399327ce78f?w=600&q=70",traits:["healthy","trained"],activity:"medium",shedding:"medium",desc:"독립적인 시바이누 믹스. 훈련이 잘 되어 있어요."},
+{id:"s71",name:"소나기",species:"dog",breed:"믹스견",age:8,gender:"수컷",size:"large",weight:21,region:"충북",shelter:"제천시동물보호소",shelterTel:"043-640-1234",img:"https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=70",traits:["quiet","friendly","senior"],activity:"low",shedding:"medium",desc:"나이 들어 조용해진 대형 믹스견. 안정적인 환경을 좋아해요."},
+// 충남
+{id:"s72",name:"태양",species:"dog",breed:"시바이누",age:3,gender:"수컷",size:"medium",weight:12,region:"충남",shelter:"천안시동물보호소",shelterTel:"041-521-1234",img:"https://images.unsplash.com/photo-1535930749574-1399327ce78f?w=600&q=70",traits:["healthy","trained"],activity:"medium",shedding:"medium",desc:"순종 시바이누. 독립적이지만 훈련이 잘 되어 있어요."},
+{id:"s73",name:"봄비",species:"cat",breed:"노르웨이숲 믹스",age:2,gender:"암컷",size:"small",weight:4.5,region:"충남",shelter:"천안시동물보호소",shelterTel:"041-521-1234",img:"https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=600&q=70",traits:["quiet","friendly"],activity:"low",shedding:"high",desc:"북유럽 혈통의 장모종 고양이. 부드럽고 조용한 성격."},
+{id:"s74",name:"기쁨",species:"dog",breed:"말티즈",age:7,gender:"수컷",size:"small",weight:3,region:"충남",shelter:"아산시동물보호소",shelterTel:"041-537-1234",img:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=70",traits:["quiet","lowshed","friendly","senior"],activity:"low",shedding:"low",desc:"시니어 말티즈지만 여전히 애교가 넘쳐요."},
+{id:"s75",name:"구슬",species:"dog",breed:"진돗개",age:4,gender:"수컷",size:"medium",weight:17,region:"충남",shelter:"공주시동물보호소",shelterTel:"041-840-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy"],activity:"high",shedding:"high",desc:"활동적인 진돗개. 마당 있는 집에 적합해요."},
+{id:"s76",name:"다솜",species:"dog",breed:"믹스견",age:6,gender:"암컷",size:"medium",weight:13,region:"충남",shelter:"홍성군동물보호소",shelterTel:"041-630-1234",img:"https://images.unsplash.com/photo-1583511655802-41d089d2b8a1?w=600&q=70",traits:["friendly","trained","kidsafe"],activity:"medium",shedding:"medium",desc:"온순하고 아이들에게도 친절한 믹스견."},
+{id:"s77",name:"유성",species:"cat",breed:"코리안숏헤어",age:5,gender:"수컷",size:"small",weight:5,region:"충남",shelter:"천안시동물보호소",shelterTel:"041-521-1234",img:"https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=600&q=70",traits:["quiet","lowshed","healthy"],activity:"low",shedding:"low",desc:"조용하고 독립적인 수컷 고양이. 1인 가구에 잘 맞아요."},
+// 전북
+{id:"s78",name:"비비",species:"dog",breed:"비숑프리제 믹스",age:3,gender:"암컷",size:"small",weight:6,region:"전북",shelter:"전주시동물보호소",shelterTel:"063-281-1234",img:"https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=600&q=70",traits:["friendly","lowshed","kidsafe","trained"],activity:"medium",shedding:"low",desc:"하얗고 복슬한 비숑 믹스. 털빠짐이 적고 아이들과 잘 놀아요."},
+{id:"s79",name:"라온",species:"dog",breed:"믹스견",age:5,gender:"수컷",size:"medium",weight:14,region:"전북",shelter:"군산시동물보호소",shelterTel:"063-454-1234",img:"https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&q=70",traits:["friendly","petfriendly","healthy"],activity:"medium",shedding:"medium",desc:"사교적이고 건강한 믹스견. 다른 동물과도 잘 어울려요."},
+{id:"s80",name:"하얀",species:"cat",breed:"터키시앙고라 믹스",age:2,gender:"수컷",size:"small",weight:4,region:"전북",shelter:"전주시동물보호소",shelterTel:"063-281-1234",img:"https://images.unsplash.com/photo-1561948955-570b270e7c36?w=600&q=70",traits:["quiet","lowshed","friendly"],activity:"low",shedding:"low",desc:"새하얀 털의 앙고라 믹스. 사람을 잘 따르고 우아해요."},
+{id:"s81",name:"빛나",species:"dog",breed:"스코티시테리어 믹스",age:6,gender:"암컷",size:"small",weight:8,region:"전북",shelter:"익산시동물보호소",shelterTel:"063-859-1234",img:"https://images.unsplash.com/photo-1535930749574-1399327ce78f?w=600&q=70",traits:["friendly","trained"],activity:"medium",shedding:"low",desc:"당당한 성격의 스코티시 믹스. 훈련이 잘 되어 있어요."},
+{id:"s82",name:"도두",species:"dog",breed:"진돗개",age:8,gender:"수컷",size:"medium",weight:18,region:"전북",shelter:"완주군동물보호소",shelterTel:"063-290-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","friendly","senior"],activity:"medium",shedding:"high",desc:"노령 진돗개. 여전히 충직하고 온순한 성격을 유지해요."},
+{id:"s83",name:"달래",species:"cat",breed:"삼색이",age:1,gender:"암컷",size:"small",weight:3,region:"전북",shelter:"전주시동물보호소",shelterTel:"063-281-1234",img:"https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=600&q=70",traits:["friendly","healthy","petfriendly"],activity:"high",shedding:"medium",desc:"어리고 활발한 삼색묘. 다른 동물과도 잘 지내요."},
+// 전남
+{id:"s84",name:"복실이",species:"dog",breed:"진돗개",age:5,gender:"암컷",size:"medium",weight:18,region:"전남",shelter:"순천시동물보호소",shelterTel:"061-749-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy","friendly"],activity:"high",shedding:"high",desc:"주인에게 매우 충성스러운 진돗개. 운동량이 많이 필요."},
+{id:"s85",name:"나루",species:"dog",breed:"풍산개 믹스",age:4,gender:"수컷",size:"large",weight:25,region:"전남",shelter:"여수시동물보호소",shelterTel:"061-690-1234",img:"https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=70",traits:["trained","healthy"],activity:"high",shedding:"high",desc:"늠름한 풍산개 믹스. 마당 있는 넓은 공간이 필요해요."},
+{id:"s86",name:"설이",species:"dog",breed:"사모예드 믹스",age:2,gender:"암컷",size:"large",weight:21,region:"전남",shelter:"목포시동물보호소",shelterTel:"061-270-1234",img:"https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=600&q=70",traits:["friendly","kidsafe"],activity:"high",shedding:"high",desc:"하얗고 큰 사모예드 믹스. 아이들과 잘 놀고 에너지가 넘쳐요."},
+{id:"s87",name:"보송",species:"cat",breed:"친칠라 믹스",age:3,gender:"수컷",size:"small",weight:5,region:"전남",shelter:"순천시동물보호소",shelterTel:"061-749-1234",img:"https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=600&q=70",traits:["quiet","friendly"],activity:"low",shedding:"high",desc:"은빛 털의 친칠라 믹스 고양이. 조용하고 품위 있는 성격."},
+{id:"s88",name:"아롱",species:"dog",breed:"믹스견",age:6,gender:"수컷",size:"medium",weight:16,region:"전남",shelter:"나주시동물보호소",shelterTel:"061-330-1234",img:"https://images.unsplash.com/photo-1583511655802-41d089d2b8a1?w=600&q=70",traits:["friendly","trained","healthy"],activity:"medium",shedding:"medium",desc:"얼룩무늬가 귀여운 믹스견. 훈련이 잘 되어 있고 온순해요."},
+{id:"s89",name:"들꽃",species:"dog",breed:"삽살개 믹스",age:7,gender:"암컷",size:"medium",weight:17,region:"전남",shelter:"광양시동물보호소",shelterTel:"061-797-1234",img:"https://images.unsplash.com/photo-1477884213360-7e9d7dcc1e48?w=600&q=70",traits:["friendly","healthy","senior"],activity:"medium",shedding:"high",desc:"털이 복슬복슬한 삽살개 믹스. 온순하고 애교가 많아요."},
+// 경북
+{id:"s90",name:"철이",species:"dog",breed:"진돗개 믹스",age:5,gender:"수컷",size:"medium",weight:18,region:"경북",shelter:"포항시동물보호소",shelterTel:"054-270-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy"],activity:"high",shedding:"high",desc:"믿음직한 진돗개 믹스. 충직하고 활동적인 성격."},
+{id:"s91",name:"밀이",species:"dog",breed:"시바이누",age:3,gender:"수컷",size:"medium",weight:11,region:"경북",shelter:"경주시동물보호소",shelterTel:"054-779-1234",img:"https://images.unsplash.com/photo-1535930749574-1399327ce78f?w=600&q=70",traits:["healthy","trained"],activity:"medium",shedding:"medium",desc:"순종 시바이누. 독립적이고 청결한 성격."},
+{id:"s92",name:"산들",species:"cat",breed:"코리안숏헤어",age:4,gender:"수컷",size:"small",weight:5,region:"경북",shelter:"구미시동물보호소",shelterTel:"054-480-1234",img:"https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=70",traits:["quiet","lowshed","healthy"],activity:"low",shedding:"low",desc:"차분하고 건강한 수컷 고양이. 넓은 공간을 좋아해요."},
+{id:"s93",name:"하늘이",species:"dog",breed:"보더콜리 믹스",age:2,gender:"수컷",size:"medium",weight:17,region:"경북",shelter:"안동시동물보호소",shelterTel:"054-840-1234",img:"https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&q=70",traits:["trained","friendly","healthy"],activity:"high",shedding:"medium",desc:"영리하고 활발한 보더콜리 믹스. 두뇌 자극이 필요해요."},
+{id:"s94",name:"분이",species:"dog",breed:"말티즈 믹스",age:9,gender:"암컷",size:"small",weight:3,region:"경북",shelter:"경산시동물보호소",shelterTel:"053-810-1234",img:"https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&q=70",traits:["quiet","lowshed","senior","friendly"],activity:"low",shedding:"low",desc:"노령 말티즈 믹스. 순하고 조용해서 조용한 가정에 딱이에요."},
+{id:"s95",name:"장이",species:"dog",breed:"허스키 믹스",age:4,gender:"수컷",size:"large",weight:24,region:"경북",shelter:"김천시동물보호소",shelterTel:"054-420-1234",img:"https://images.unsplash.com/photo-1586671267731-da2cf3ceeb80?w=600&q=70",traits:["friendly","healthy"],activity:"high",shedding:"high",desc:"에너지 넘치는 허스키 믹스. 매일 충분한 운동이 필요."},
+// 경남
+{id:"s96",name:"담이",species:"dog",breed:"진돗개",age:6,gender:"수컷",size:"medium",weight:19,region:"경남",shelter:"창원시동물보호소",shelterTel:"055-225-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy"],activity:"high",shedding:"high",desc:"의젓한 진돗개. 주인과의 유대감이 강해요."},
+{id:"s97",name:"루루",species:"dog",breed:"치와와 믹스",age:4,gender:"암컷",size:"small",weight:3,region:"경남",shelter:"진주시동물보호소",shelterTel:"055-749-1234",img:"https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=600&q=70",traits:["friendly","lowshed","trained"],activity:"low",shedding:"low",desc:"작고 귀여운 치와와 믹스. 훈련이 잘 되어 있고 애교 많음."},
+{id:"s98",name:"봄빛",species:"cat",breed:"턱시도 코리안숏헤어",age:2,gender:"수컷",size:"small",weight:4,region:"경남",shelter:"창원시동물보호소",shelterTel:"055-225-1234",img:"https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&q=70",traits:["friendly","lowshed","healthy"],activity:"medium",shedding:"low",desc:"검은색과 흰색 털의 턱시도 고양이. 사람을 잘 따라요."},
+{id:"s99",name:"나눔",species:"dog",breed:"비글",age:3,gender:"수컷",size:"medium",weight:12,region:"경남",shelter:"김해시동물보호소",shelterTel:"055-330-1234",img:"https://images.unsplash.com/photo-1505628346881-b72b27e84530?w=600&q=70",traits:["friendly","kidsafe","petfriendly"],activity:"high",shedding:"medium",desc:"활발하고 코가 예민한 비글. 가족과 잘 어울려요."},
+{id:"s100",name:"아리",species:"dog",breed:"믹스견",age:7,gender:"암컷",size:"medium",weight:14,region:"경남",shelter:"통영시동물보호소",shelterTel:"055-650-1234",img:"https://images.unsplash.com/photo-1552053831-71594a27632d?w=600&q=70",traits:["quiet","friendly","senior","trained"],activity:"low",shedding:"medium",desc:"나이 들어 차분해진 믹스견. 훈련이 잘 되어 있어요."},
+{id:"s101",name:"또리",species:"dog",breed:"포메라니안 믹스",age:5,gender:"수컷",size:"small",weight:4,region:"경남",shelter:"양산시동물보호소",shelterTel:"055-392-1234",img:"https://images.unsplash.com/photo-1560807707-8cc77767d783?w=600&q=70",traits:["friendly","trained","healthy"],activity:"medium",shedding:"high",desc:"활달하고 사교적인 포메라니안 믹스."},
+// 제주
+{id:"s102",name:"소금",species:"cat",breed:"코리안숏헤어",age:5,gender:"수컷",size:"small",weight:5,region:"제주",shelter:"제주특별자치도 동물보호센터",shelterTel:"064-710-1234",img:"https://images.unsplash.com/photo-1561948955-570b270e7c36?w=600&q=70",traits:["friendly","petfriendly","healthy"],activity:"medium",shedding:"medium",desc:"사람도 다른 고양이도 잘 따르는 흰 고양이."},
+{id:"s103",name:"감귤",species:"dog",breed:"믹스견",age:3,gender:"암컷",size:"medium",weight:13,region:"제주",shelter:"제주특별자치도 동물보호센터",shelterTel:"064-710-1234",img:"https://images.unsplash.com/photo-1583511655802-41d089d2b8a1?w=600&q=70",traits:["friendly","healthy","kidsafe"],activity:"medium",shedding:"medium",desc:"제주 출신의 활발한 믹스견. 사람을 좋아하고 건강해요."},
+{id:"s104",name:"파도",species:"dog",breed:"진돗개 믹스",age:4,gender:"수컷",size:"medium",weight:16,region:"제주",shelter:"서귀포시동물보호소",shelterTel:"064-760-1234",img:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&q=70",traits:["trained","healthy"],activity:"high",shedding:"high",desc:"제주의 자연에서 자란 진돗개 믹스. 활동적이에요."},
+{id:"s105",name:"구름이",species:"dog",breed:"사모예드 믹스",age:2,gender:"암컷",size:"large",weight:22,region:"제주",shelter:"제주특별자치도 동물보호센터",shelterTel:"064-710-1234",img:"https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=600&q=70",traits:["friendly","kidsafe","healthy"],activity:"high",shedding:"high",desc:"새하얀 사모예드 믹스. 아이들과 뛰어노는 걸 좋아해요."},
+{id:"s106",name:"한라",species:"dog",breed:"믹스견",age:6,gender:"수컷",size:"medium",weight:15,region:"제주",shelter:"제주특별자치도 동물보호센터",shelterTel:"064-710-1234",img:"https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=600&q=70",traits:["friendly","trained","healthy"],activity:"medium",shedding:"medium",desc:"제주에서 구조된 믹스견. 온순하고 훈련이 잘 되어 있어요."},
+{id:"s107",name:"산다",species:"cat",breed:"뱅갈 믹스",age:3,gender:"수컷",size:"small",weight:4,region:"제주",shelter:"서귀포시동물보호소",shelterTel:"064-760-1234",img:"https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=600&q=70",traits:["friendly","healthy","petfriendly"],activity:"high",shedding:"medium",desc:"표범 무늬의 뱅갈 믹스. 활발하고 장난기가 넘쳐요."},
+{id:"s108",name:"이슬비",species:"cat",breed:"노르웨이숲 믹스",age:4,gender:"암컷",size:"small",weight:4.5,region:"제주",shelter:"제주특별자치도 동물보호센터",shelterTel:"064-710-1234",img:"https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=600&q=70",traits:["quiet","friendly"],activity:"low",shedding:"high",desc:"북유럽 계통의 장모 고양이. 부드럽고 조용한 성격."}
+];
+
+// ====== 즐겨찾기 (localStorage) ======
+const FAV_KEY = 'pet_match_favorites';
+let favorites = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+let allPetsCache = []; // 즐겨찾기 카드 표시용 (모든 본 동물)
+
+function saveFavorites() {
+  localStorage.setItem(FAV_KEY, JSON.stringify(favorites));
+  updateFavCount();
+}
+function isFav(id) { return favorites.some(f => f.id === id); }
+function toggleFav(pet) {
+  const idx = favorites.findIndex(f => f.id === pet.id);
+  if (idx >= 0) {
+    favorites.splice(idx, 1);
+    showToast(`💔 ${pet.name || '친구'} 찜 해제됨`);
+  } else {
+    favorites.push(pet);
+    showToast(`❤️ ${pet.name || '친구'} 찜 목록에 추가됨`);
+  }
+  saveFavorites();
+}
+function updateFavCount() {
+  const el = document.getElementById('favCount');
+  el.textContent = favorites.length ? `(${favorites.length})` : '';
+}
+
+// ====== 토스트 ======
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ====== 공유 ======
+async function sharePet(pet) {
+  const text = `${pet.name || '유기동물'} (${pet.breed}, ${pet.age}살) - ${pet.shelter}\n${pet.desc}`;
+  const url = location.href;
+  const data = { title: '댕냥구조대 - ' + (pet.name || '유기동물'), text, url };
+
+  if (navigator.share) {
+    try { await navigator.share(data); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  try {
+    await navigator.clipboard.writeText(`${data.title}\n${text}\n${url}`);
+    showToast('📋 정보가 클립보드에 복사되었습니다');
+  } catch (e) {
+    showToast('공유에 실패했어요');
+  }
+}
+
+// ====== 데이터 조회 (로컬) ======
+function loadPets() {
+  return SAMPLE_PETS;
+}
+
+// ====== 매칭 알고리즘 ======
+function score(pet, prefs) {
+  let s = 50;
+  const reasons = [];
+  const minus = [];
+
+  if (prefs.region && pet.region === prefs.region) {
+    s += 15; reasons.push(`같은 지역(${pet.region})`);
+  } else if (prefs.region && pet.region !== prefs.region) {
+    s -= 5;
+  }
+
+  if (prefs.species !== "any" && pet.species !== prefs.species) {
+    return { total: 0, reasons: [], minus: ["선호 종류 불일치"] };
+  }
+
+  if (pet.species === "dog" && prefs.size !== "any") {
+    if (pet.size === prefs.size) { s += 8; reasons.push("선호 크기"); }
+    else { s -= 5; }
+  }
+
+  if (pet.species === "dog") {
+    if (prefs.housing === "studio" && pet.size === "large") { s -= 15; minus.push("원룸엔 대형견 부담"); }
+    if (prefs.housing === "studio" && pet.size === "small") { s += 5; reasons.push("원룸 적합 크기"); }
+    if (prefs.housing === "house" && pet.size === "large") { s += 8; reasons.push("마당 활용 가능"); }
+  }
+
+  const actMap = { low: 1, medium: 2, high: 3 };
+  const diff = Math.abs(actMap[prefs.activity] - actMap[pet.activity]);
+  if (diff === 0) { s += 12; reasons.push("활동량 일치"); }
+  else if (diff === 1) { s += 3; }
+  else { s -= 10; minus.push("활동량 차이 큼"); }
+
+  if (prefs.awayTime === "long") {
+    if (pet.species === "cat") { s += 6; reasons.push("긴 부재 시간에 고양이 적합"); }
+    if (pet.activity === "high" && pet.species === "dog") { s -= 8; minus.push("활동적인 강아지엔 부재 시간 김"); }
+  }
+  if (prefs.awayTime === "short" && pet.activity === "high") { s += 4; }
+
+  if (prefs.family === "kids") {
+    if (pet.traits.includes("kidsafe")) { s += 10; reasons.push("아이 친화적"); }
+    else if (pet.traits.includes("special")) { s -= 6; }
+  }
+  if (prefs.family === "senior") {
+    if (pet.activity === "low") { s += 6; reasons.push("고령자 동거 적합"); }
+    if (pet.size === "large") { s -= 5; }
+  }
+  if (prefs.family === "single" && prefs.awayTime === "long") {
+    if (pet.species === "cat") s += 4;
+  }
+
+  if (prefs.experience === "none") {
+    if (pet.traits.includes("trained")) { s += 8; reasons.push("훈련된 상태 - 초보자 가능"); }
+    if (pet.traits.includes("special")) { s -= 12; minus.push("특수 케어는 경험 필요"); }
+    if (pet.activity === "high" && pet.size === "large") { s -= 8; }
+  }
+  if (prefs.experience === "many") {
+    if (pet.traits.includes("special")) { s += 8; reasons.push("전문 케어 매칭"); }
+  }
+
+  prefs.priorities.forEach(p => {
+    if (pet.traits.includes(p)) {
+      s += 7;
+      const labelMap = {
+        quiet: "조용한 성격", friendly: "사람을 잘 따름", kidsafe: "아이 친화",
+        petfriendly: "동물 친화", lowshed: "털빠짐 적음", trained: "훈련됨",
+        healthy: "건강함", senior: "노령 OK", special: "특수 케어"
+      };
+      reasons.push(labelMap[p]);
+    }
+  });
+
+  if (prefs.priorities.includes("lowshed") && pet.shedding === "high") {
+    s -= 10; minus.push("털빠짐 많음");
+  }
+
+  return { total: Math.max(0, Math.min(100, s)), reasons, minus };
+}
+
+// ====== UI 이벤트 ======
+const chips = document.querySelectorAll('.chip');
+chips.forEach(chip => {
+  chip.addEventListener('click', (e) => {
+    const cb = chip.querySelector('input');
+    if (e.target !== cb) cb.checked = !cb.checked;
+    chip.classList.toggle('active', cb.checked);
+  });
+});
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const target = tab.dataset.tab;
+    document.getElementById('matchView').style.display = target === 'match' ? 'block' : 'none';
+    document.getElementById('favoritesView').style.display = target === 'favorites' ? 'block' : 'none';
+    if (target === 'favorites') renderFavorites();
+  });
+});
+
+document.getElementById('findBtn').addEventListener('click', () => {
+  const prefs = {
+    region: document.getElementById('region').value,
+    housing: document.getElementById('housing').value,
+    activity: document.getElementById('activity').value,
+    awayTime: document.getElementById('awayTime').value,
+    family: document.getElementById('family').value,
+    experience: document.getElementById('experience').value,
+    species: document.getElementById('species').value,
+    size: document.getElementById('size').value,
+    priorities: Array.from(document.querySelectorAll('#prioritiesGroup input:checked')).map(i => i.value)
+  };
+
+  const results = document.getElementById('results');
+  results.style.display = 'block';
+  results.scrollIntoView({ behavior: 'smooth' });
+
+  const items = loadPets();
+  allPetsCache = items;
+
+  const scored = items
+    .map(p => ({ pet: p, ...score(p, prefs) }))
+    .filter(x => x.total > 0)
+    .sort((a, b) => b.total - a.total);
+
+  renderResults(scored, prefs);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+  document.getElementById('activity').value = 'medium';
+  document.getElementById('awayTime').value = 'medium';
+  document.getElementById('experience').value = 'some';
+  document.querySelectorAll('#prioritiesGroup input').forEach(i => {
+    i.checked = false;
+    i.parentElement.classList.remove('active');
+  });
+  document.getElementById('results').style.display = 'none';
+});
+
+function renderResults(scored, prefs) {
+  const grid = document.getElementById('petGrid');
+  const summary = document.getElementById('resultSummary');
+
+  const top = scored.slice(0, 12);
+
+  if (top.length === 0) {
+    summary.textContent = "조건에 맞는 동물을 찾지 못했어요. 조건을 조정해 다시 시도해보세요.";
+    grid.innerHTML = '<div class="empty">😢 조건과 일치하는 친구가 없어요</div>';
+    return;
+  }
+
+  const filterDesc = [];
+  if (prefs.region) filterDesc.push(`지역: ${prefs.region}`);
+  if (prefs.species !== "any") filterDesc.push(`종류: ${prefs.species === "dog" ? "강아지" : "고양이"}`);
+  filterDesc.push(`활동량: ${ {low:"낮음",medium:"보통",high:"높음"}[prefs.activity] }`);
+  if (prefs.priorities.length) filterDesc.push(`우선순위 ${prefs.priorities.length}개`);
+
+  summary.innerHTML = `입력 조건 (${filterDesc.join(' · ')})에 따라 <strong>${top.length}마리</strong>의 친구를 추천합니다.`;
+
+  grid.innerHTML = top.map(({pet, total, reasons, minus}) => renderPetCard(pet, { total, reasons, minus })).join('');
+  attachCardHandlers(grid, top.map(t => t.pet));
+}
+
+function renderPetCard(pet, scoreInfo) {
+  const total = scoreInfo?.total;
+  const badgeClass = total >= 80 ? 'high' : total >= 60 ? 'mid' : '';
+  const speciesIcon = pet.species === 'dog' ? '🐶' : '🐱';
+  const sizeLabel = { small: "소형", medium: "중형", large: "대형" }[pet.size] || '';
+  const traitLabel = {
+    quiet:"조용함",friendly:"친화적",kidsafe:"아이OK",petfriendly:"동물OK",
+    lowshed:"털적음",trained:"훈련됨",healthy:"건강",senior:"노령",special:"특수케어"
+  };
+  const fallbackImg = `https://placehold.co/600x400/f3d2c1/001858?text=${encodeURIComponent(pet.name || '동물')}`;
+  const imgSrc = pet.img || fallbackImg;
+  const heart = isFav(pet.id) ? '❤️' : '🤍';
+  const favClass = isFav(pet.id) ? 'fav-btn active' : 'fav-btn';
+
+  return `
+    <div class="pet-card" data-pet-id="${pet.id}">
+      ${total !== undefined ? `<span class="match-badge ${badgeClass}">매칭 ${total}점</span>` : ''}
+      <button class="${favClass}" data-fav="${pet.id}" aria-label="찜하기">${heart}</button>
+      <img class="pet-img" src="${imgSrc}" alt="${pet.name || '동물'}" loading="lazy"
+           onerror="this.onerror=null;this.src='${fallbackImg}';" />
+      <div class="pet-info">
+        <h3>${speciesIcon} ${pet.name || '이름 없음'}</h3>
+        <div class="pet-meta">${pet.breed} · ${pet.age}살 · ${pet.gender}${sizeLabel ? ' · ' + sizeLabel : ''}${pet.weight ? '(' + pet.weight + 'kg)' : ''}</div>
+        <div class="pet-tags">
+          ${(pet.traits || []).slice(0,4).map(t => `<span class="tag">${traitLabel[t] || t}</span>`).join('')}
+        </div>
+        <p style="font-size:0.88rem;color:#444;">${pet.desc || ''}</p>
+        ${scoreInfo?.reasons?.length ? `<div class="reasons"><strong>✓ 잘 맞는 점:</strong> ${scoreInfo.reasons.slice(0,3).join(', ')}</div>` : ''}
+        ${scoreInfo?.minus?.length ? `<div class="reasons" style="background:#fff0f0;"><strong style="color:#d04545;">! 고려할 점:</strong> ${scoreInfo.minus.join(', ')}</div>` : ''}
+        <div class="pet-shelter">📍 ${pet.region || ''} · ${pet.shelter || ''}</div>
+        <div class="pet-actions">
+          <button class="btn-share" data-share="${pet.id}">📤 공유</button>
+          ${pet.shelterTel ? `<a href="tel:${pet.shelterTel}" style="flex:1;text-decoration:none;"><button class="btn-call" style="width:100%;">📞 보호소 전화</button></a>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function attachCardHandlers(container, pets) {
+  container.querySelectorAll('[data-fav]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.fav;
+      const pet = pets.find(p => String(p.id) === String(id));
+      if (!pet) return;
+      toggleFav(pet);
+      btn.textContent = isFav(pet.id) ? '❤️' : '🤍';
+      btn.classList.toggle('active', isFav(pet.id));
+    });
+  });
+  container.querySelectorAll('[data-share]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.share;
+      const pet = pets.find(p => String(p.id) === String(id));
+      if (pet) sharePet(pet);
+    });
+  });
+}
+
+function renderFavorites() {
+  const grid = document.getElementById('favGrid');
+  const summary = document.getElementById('favSummary');
+  if (favorites.length === 0) {
+    summary.textContent = '아직 찜한 친구가 없어요. 추천 결과에서 🤍 버튼을 눌러 저장해보세요.';
+    grid.innerHTML = '';
+    return;
+  }
+  summary.innerHTML = `❤️ <strong>${favorites.length}마리</strong>의 친구를 찜했어요. 보호소에 직접 문의해보세요.`;
+  grid.innerHTML = favorites.map(pet => renderPetCard(pet)).join('');
+  attachCardHandlers(grid, favorites);
+}
+
+// ====== 초기화 ======
+updateFavCount();
+</script>
+
+</body>
+</html>
