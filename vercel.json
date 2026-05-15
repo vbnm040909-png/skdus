@@ -1,5 +1,10 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/emotion_trash.html" }
+  "version": 2,
+  "builds": [
+    { "src": "emotion_trash.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/", "dest": "/emotion_trash.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
