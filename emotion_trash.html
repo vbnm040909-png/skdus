@@ -4,6 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오늘의 감정 버리기</title>
+    <!--
+    ═══════════════════════════════════════════════════
+     Supabase 설정 (처음 한 번만 하면 됨)
+    ═══════════════════════════════════════════════════
+    1. https://supabase.com → 새 프로젝트 만들기
+    2. 좌측 메뉴 [SQL Editor] → 아래 SQL 붙여넣고 실행:
+
+      create table emotions (
+        id uuid default gen_random_uuid() primary key,
+        user_id uuid references auth.users default auth.uid() not null,
+        text text not null,
+        created_at timestamptz default now()
+      );
+      alter table emotions enable row level security;
+      create policy "own" on emotions for all
+        using (auth.uid() = user_id)
+        with check (auth.uid() = user_id);
+
+    3. [Authentication] → [Providers] → Email →
+       "Confirm email" 스위치 OFF (이메일 인증 생략)
+    4. [Project Settings] → [API] 에서
+       Project URL 과 anon/public key 복사
+    5. 아래 SUPABASE_URL, SUPABASE_ANON_KEY 에 붙여넣기
+    ═══════════════════════════════════════════════════
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
@@ -13,463 +39,260 @@
             min-height: 100vh;
             background: linear-gradient(160deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%);
             font-family: 'Noto Sans KR', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            overflow: hidden; position: relative;
         }
 
-        /* 별 */
         .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
         .star {
             position: absolute; background: white; border-radius: 50%;
             animation: twinkle var(--dur) infinite var(--delay);
         }
-        @keyframes twinkle {
-            0%,100% { opacity: 0.15; }
-            50% { opacity: 0.85; transform: scale(1.3); }
-        }
+        @keyframes twinkle { 0%,100%{opacity:.15} 50%{opacity:.85;transform:scale(1.3)} }
 
-        /* ════════════════════════════════
-           로그인 / 회원가입 화면
-        ════════════════════════════════ */
+        /* ── 로그인 화면 ── */
         #authScreen {
             position: fixed; inset: 0;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 100;
+            display: flex; align-items: center; justify-content: center; z-index: 100;
         }
-
         .auth-card {
-            background: rgba(20, 30, 60, 0.92);
+            background: rgba(20,30,60,0.92);
             backdrop-filter: blur(18px);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 22px;
             padding: 38px 36px 32px;
             width: 340px;
             box-shadow: 0 24px 70px rgba(0,0,0,0.6);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: flex; flex-direction: column; gap: 20px;
         }
+        .auth-title { text-align: center; font-size: 1.55rem; font-weight: 700; color: white; letter-spacing: -.5px; }
+        .auth-subtitle { text-align: center; font-size: .78rem; color: rgba(255,255,255,.42); margin-top: -12px; font-weight: 300; }
 
-        .auth-title {
-            text-align: center;
-            font-size: 1.55rem;
-            font-weight: 700;
-            color: white;
-            letter-spacing: -0.5px;
-        }
-        .auth-subtitle {
-            text-align: center;
-            font-size: 0.78rem;
-            color: rgba(255,255,255,0.42);
-            margin-top: -12px;
-            font-weight: 300;
-        }
-
-        .auth-tabs {
-            display: flex;
-            background: rgba(255,255,255,0.07);
-            border-radius: 12px;
-            padding: 4px;
-            gap: 4px;
-        }
+        .auth-tabs { display: flex; background: rgba(255,255,255,.07); border-radius: 12px; padding: 4px; gap: 4px; }
         .auth-tab {
-            flex: 1;
-            padding: 9px;
-            border: none;
-            border-radius: 9px;
-            background: transparent;
-            color: rgba(255,255,255,0.45);
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
+            flex: 1; padding: 9px; border: none; border-radius: 9px;
+            background: transparent; color: rgba(255,255,255,.45);
+            font-family: 'Noto Sans KR', sans-serif; font-size: .85rem; font-weight: 500;
+            cursor: pointer; transition: all .2s;
         }
-        .auth-tab.active {
-            background: rgba(255,255,255,0.12);
-            color: white;
-        }
+        .auth-tab.active { background: rgba(255,255,255,.12); color: white; }
 
         .auth-form { display: flex; flex-direction: column; gap: 12px; }
-
         .auth-input {
-            width: 100%;
-            padding: 13px 16px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 12px;
-            color: white;
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 0.88rem;
-            outline: none;
-            transition: border-color 0.2s;
+            width: 100%; padding: 13px 16px;
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
+            color: white; font-family: 'Noto Sans KR', sans-serif; font-size: .88rem;
+            outline: none; transition: border-color .2s;
         }
-        .auth-input::placeholder { color: rgba(255,255,255,0.28); }
-        .auth-input:focus { border-color: rgba(100,160,255,0.55); }
+        .auth-input::placeholder { color: rgba(255,255,255,.28); }
+        .auth-input:focus { border-color: rgba(100,160,255,.55); }
 
         .auth-btn {
-            width: 100%;
-            padding: 13px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 0.92rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 18px rgba(102,126,234,0.4);
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            color: white; border: none; border-radius: 12px;
+            font-family: 'Noto Sans KR', sans-serif; font-size: .92rem; font-weight: 600;
+            cursor: pointer; transition: all .2s;
+            box-shadow: 0 4px 18px rgba(102,126,234,.4);
         }
-        .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(102,126,234,0.5); }
-        .auth-btn:active { transform: scale(0.98); }
-        .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(102,126,234,.5); }
+        .auth-btn:active { transform: scale(.98); }
+        .auth-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
-        .auth-error {
-            font-size: 0.78rem;
-            color: #ff6b6b;
-            text-align: center;
-            min-height: 18px;
-        }
-        .auth-success {
-            font-size: 0.78rem;
-            color: #6bcb77;
-            text-align: center;
-            min-height: 18px;
-            font-weight: 500;
-        }
+        .auth-success { font-size: .78rem; color: #6bcb77; text-align: center; min-height: 18px; font-weight: 500; }
+        .auth-error   { font-size: .78rem; color: #ff6b6b; text-align: center; min-height: 18px; }
 
-        /* ════════════════════════════════
-           메인 화면
-        ════════════════════════════════ */
+        /* ── 메인 화면 ── */
         #mainScreen { display: none; flex-direction: column; align-items: center; z-index: 1; }
         #mainScreen.visible { display: flex; }
 
-        /* 유저바 */
-        .user-bar {
-            position: fixed;
-            top: 20px; right: 22px;
-            display: flex; align-items: center; gap: 10px;
-            z-index: 10;
-        }
-        .user-email {
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.45);
-            max-width: 180px;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
+        .user-bar { position: fixed; top: 20px; right: 22px; display: flex; align-items: center; gap: 10px; z-index: 10; }
+        .user-email { font-size: .75rem; color: rgba(255,255,255,.45); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .logout-btn {
             padding: 6px 14px;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.14);
-            border-radius: 20px;
-            color: rgba(255,255,255,0.55);
-            font-size: 0.75rem;
-            cursor: pointer;
-            font-family: 'Noto Sans KR', sans-serif;
-            transition: all 0.2s;
+            background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+            border-radius: 20px; color: rgba(255,255,255,.55);
+            font-size: .75rem; cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif; transition: all .2s;
         }
-        .logout-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .logout-btn:hover { background: rgba(255,255,255,.15); color: white; }
 
-        /* 타이틀 */
         .title-area { text-align: center; margin-bottom: 2.2rem; }
-        .title-area h1 {
-            font-size: 1.85rem; font-weight: 700; color: #fff;
-            text-shadow: 0 0 30px rgba(130,180,255,0.55);
-            margin-bottom: 0.4rem;
-        }
-        .title-area p { font-size: 0.82rem; color: rgba(255,255,255,0.4); font-weight: 300; }
+        .title-area h1 { font-size: 1.85rem; font-weight: 700; color: #fff; text-shadow: 0 0 30px rgba(130,180,255,.55); margin-bottom: .4rem; }
+        .title-area p  { font-size: .82rem; color: rgba(255,255,255,.4); font-weight: 300; }
 
-        /* 레이아웃 */
         .main-layout { display: flex; align-items: center; gap: 5rem; }
 
         /* 포스트잇 */
         .postit-area { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-        .postit-instruction {
-            font-size: 0.78rem; color: rgba(255,255,255,0.55);
-            font-weight: 300; letter-spacing: 0.2px;
-        }
+        .postit-instruction { font-size: .78rem; color: rgba(255,255,255,.55); font-weight: 300; letter-spacing: .2px; }
 
         #postit {
-            width: 270px; height: 270px;
-            background: #FFE566;
-            box-shadow: 4px 4px 0 rgba(0,0,0,0.12), 0 12px 40px rgba(0,0,0,0.45),
-                        inset 0 -3px 0 rgba(0,0,0,0.07);
-            position: relative;
-            transform-origin: center center;
+            width: 270px; height: 270px; background: #FFE566;
+            box-shadow: 4px 4px 0 rgba(0,0,0,.12), 0 12px 40px rgba(0,0,0,.45), inset 0 -3px 0 rgba(0,0,0,.07);
+            position: relative; transform-origin: center center;
         }
-        #postit::before {
-            content: ''; position: absolute;
-            top: 0; left: 0; right: 0; height: 7px;
-            background: rgba(0,0,0,0.09);
-        }
-        #postit::after {
-            content: ''; position: absolute;
-            bottom: 0; right: 0;
-            width: 0; height: 0;
-            border-style: solid; border-width: 0 0 26px 26px;
-            border-color: transparent transparent rgba(180,140,0,0.25) transparent;
-        }
+        #postit::before { content:''; position: absolute; top:0; left:0; right:0; height:7px; background:rgba(0,0,0,.09); }
+        #postit::after  { content:''; position: absolute; bottom:0; right:0; width:0; height:0; border-style:solid; border-width:0 0 26px 26px; border-color:transparent transparent rgba(180,140,0,.25) transparent; }
         #postit textarea {
-            width: 100%; height: 100%;
-            padding: 16px 16px 28px 16px;
-            background: transparent; border: none; resize: none;
-            font-size: 0.92rem; line-height: 1.75;
-            color: #3a2d00;
-            font-family: 'Noto Sans KR', sans-serif;
-            outline: none; user-select: text;
+            width:100%; height:100%; padding:16px 16px 28px 16px;
+            background:transparent; border:none; resize:none;
+            font-size:.92rem; line-height:1.75; color:#3a2d00;
+            font-family:'Noto Sans KR',sans-serif; outline:none; user-select:text;
         }
-        #postit textarea::placeholder { color: rgba(100,75,0,0.38); font-weight: 300; }
+        #postit textarea::placeholder { color:rgba(100,75,0,.38); font-weight:300; }
 
-        /* 구기기 버튼 */
         .crumple-btn {
             padding: 10px 32px;
-            background: linear-gradient(135deg, #f39c12, #e67e22);
+            background: linear-gradient(135deg,#f39c12,#e67e22);
             color: white; border: none; border-radius: 25px;
-            font-size: 0.9rem; font-weight: 600; cursor: pointer;
-            font-family: 'Noto Sans KR', sans-serif;
-            transition: all 0.2s;
-            box-shadow: 0 4px 16px rgba(230,126,34,0.45);
+            font-size: .9rem; font-weight: 600; cursor: pointer;
+            font-family: 'Noto Sans KR',sans-serif; transition: all .2s;
+            box-shadow: 0 4px 16px rgba(230,126,34,.45);
         }
-        .crumple-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,0.55); }
-        .crumple-btn:active { transform: scale(0.95); }
-        .crumple-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+        .crumple-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,.55); }
+        .crumple-btn:active { transform: scale(.95); }
+        .crumple-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; }
 
         /* 구겨진 볼 */
         #crumpledBall {
-            width: 68px; height: 68px;
+            width:68px; height:68px;
             background:
-                radial-gradient(circle at 32% 28%, rgba(255,255,200,0.6) 0%, transparent 45%),
-                radial-gradient(circle at 70% 65%, rgba(0,0,0,0.08) 0%, transparent 40%),
+                radial-gradient(circle at 32% 28%,rgba(255,255,200,.6) 0%,transparent 45%),
+                radial-gradient(circle at 70% 65%,rgba(0,0,0,.08) 0%,transparent 40%),
                 repeating-conic-gradient(#FFD700 0deg,#FFE566 8deg,#e6c200 16deg,#FFE566 24deg);
-            border-radius: 50%;
-            position: fixed; cursor: grab; display: none;
-            z-index: 600;
-            box-shadow: 3px 4px 14px rgba(0,0,0,0.45), inset -4px -4px 10px rgba(0,0,0,0.12);
-            touch-action: none; user-select: none;
-            transition: box-shadow 0.2s;
+            border-radius:50%; position:fixed; cursor:grab; display:none; z-index:600;
+            box-shadow:3px 4px 14px rgba(0,0,0,.45),inset -4px -4px 10px rgba(0,0,0,.12);
+            touch-action:none; user-select:none; transition:box-shadow .2s;
         }
-        #crumpledBall.over-trash {
-            box-shadow: 0 0 22px rgba(255,220,0,0.8), 3px 4px 14px rgba(0,0,0,0.45);
-            cursor: grabbing;
-        }
+        #crumpledBall.over-trash { box-shadow:0 0 22px rgba(255,220,0,.8),3px 4px 14px rgba(0,0,0,.45); cursor:grabbing; }
 
-        /* 구기기 애니메이션 */
         @keyframes crumpleAnim {
-            0%   { transform: scale(1) rotate(0deg) skew(0,0); border-radius: 2px; opacity: 1; }
-            15%  { transform: scale(0.97) rotate(-2deg) skew(1deg,0); }
-            30%  { transform: scale(0.91) rotate(4deg) skew(-3deg,2deg); border-radius: 6px; }
-            50%  { transform: scale(0.78) rotate(-7deg) skew(5deg,-3deg); border-radius: 18px; }
-            70%  { transform: scale(0.55) rotate(14deg) skew(-6deg,4deg); border-radius: 35%; }
-            85%  { transform: scale(0.32) rotate(25deg); border-radius: 50%; opacity: 0.9; }
-            100% { transform: scale(0.05) rotate(400deg); border-radius: 50%; opacity: 0; }
+            0%  { transform:scale(1) rotate(0) skew(0,0); border-radius:2px; opacity:1; }
+            15% { transform:scale(.97) rotate(-2deg) skew(1deg,0); }
+            30% { transform:scale(.91) rotate(4deg) skew(-3deg,2deg); border-radius:6px; }
+            50% { transform:scale(.78) rotate(-7deg) skew(5deg,-3deg); border-radius:18px; }
+            70% { transform:scale(.55) rotate(14deg) skew(-6deg,4deg); border-radius:35%; }
+            85% { transform:scale(.32) rotate(25deg); border-radius:50%; opacity:.9; }
+            100%{ transform:scale(.05) rotate(400deg); border-radius:50%; opacity:0; }
         }
-        .crumpling { animation: crumpleAnim 0.75s cubic-bezier(0.4,0,0.6,1) forwards; }
+        .crumpling { animation:crumpleAnim .75s cubic-bezier(.4,0,.6,1) forwards; }
 
         /* 쓰레기통 */
-        .trash-section { display: flex; flex-direction: column; align-items: center; gap: 10px; transition: filter 0.2s; }
-        .trash-section.highlight { filter: drop-shadow(0 0 18px rgba(255,220,0,0.6)); }
+        .trash-section { display:flex; flex-direction:column; align-items:center; gap:10px; transition:filter .2s; }
+        .trash-section.highlight { filter:drop-shadow(0 0 18px rgba(255,220,0,.6)); }
+        #trashCanSvg { width:120px; height:150px; filter:drop-shadow(0 10px 25px rgba(231,76,60,.35)); }
+        #trashLid { transform-origin:112px 24px; transition:transform .28s cubic-bezier(.34,1.56,.64,1); }
+        #trashLid.open { transform:rotate(-42deg) translateY(-5px); }
+        .trash-label { font-size:.72rem; color:rgba(255,255,255,.4); }
+        .count-badge { background:rgba(255,255,255,.08); color:rgba(255,255,255,.65); padding:5px 14px; border-radius:20px; font-size:.72rem; border:1px solid rgba(255,255,255,.14); }
 
-        #trashCanSvg {
-            width: 120px; height: 150px;
-            filter: drop-shadow(0 10px 25px rgba(231,76,60,0.35));
-        }
-        #trashLid {
-            transform-origin: 112px 24px;
-            transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        #trashLid.open { transform: rotate(-42deg) translateY(-5px); }
-
-        .trash-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
-        .count-badge {
-            background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.65);
-            padding: 5px 14px; border-radius: 20px; font-size: 0.72rem;
-            border: 1px solid rgba(255,255,255,0.14);
-        }
-
-        /* 드래그 힌트 */
-        #dragHint {
-            position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
-            font-size: 0.78rem; color: rgba(255,255,255,0.5);
-            display: none; animation: pulse 2s ease infinite;
-            white-space: nowrap; z-index: 1;
-        }
+        #dragHint { position:fixed; bottom:32px; left:50%; transform:translateX(-50%); font-size:.78rem; color:rgba(255,255,255,.5); display:none; animation:pulse 2s ease infinite; white-space:nowrap; z-index:1; }
         @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:.85} }
 
-        /* 성공 메시지 */
         #successMsg {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%,-50%) scale(0);
-            background: rgba(46,213,115,0.93); color: white;
-            padding: 16px 38px; border-radius: 50px;
-            font-size: 1rem; font-weight: 700; z-index: 999;
-            pointer-events: none; white-space: nowrap;
-            box-shadow: 0 10px 40px rgba(46,213,115,0.4);
-            transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+            position:fixed; top:50%; left:50%;
+            transform:translate(-50%,-50%) scale(0);
+            background:rgba(46,213,115,.93); color:white;
+            padding:16px 38px; border-radius:50px;
+            font-size:1rem; font-weight:700; z-index:999;
+            pointer-events:none; white-space:nowrap;
+            box-shadow:0 10px 40px rgba(46,213,115,.4);
+            transition:transform .4s cubic-bezier(.175,.885,.32,1.275);
         }
-        #successMsg.show { transform: translate(-50%,-50%) scale(1); }
+        #successMsg.show { transform:translate(-50%,-50%) scale(1); }
 
-        /* 파티클 */
-        @keyframes particleFly {
-            from { transform: translate(0,0) scale(1); opacity: 1; }
-            to   { transform: translate(var(--px),var(--py)) scale(0); opacity: 0; }
-        }
-        .particle {
-            position: fixed; width: 9px; height: 9px; border-radius: 50%;
-            pointer-events: none; z-index: 1001;
-            animation: particleFly var(--dur) ease-out forwards;
-        }
+        @keyframes particleFly { from{transform:translate(0,0) scale(1);opacity:1} to{transform:translate(var(--px),var(--py)) scale(0);opacity:0} }
+        .particle { position:fixed; width:9px; height:9px; border-radius:50%; pointer-events:none; z-index:1001; animation:particleFly var(--dur) ease-out forwards; }
 
-        /* 흔들기 */
-        @keyframes shake {
-            0%,100%{transform:translateX(0)} 20%{transform:translateX(-9px) rotate(-1deg)}
-            45%{transform:translateX(9px) rotate(1deg)} 70%{transform:translateX(-5px)}
-        }
-        .shake { animation: shake 0.42s ease; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-9px) rotate(-1deg)} 45%{transform:translateX(9px) rotate(1deg)} 70%{transform:translateX(-5px)} }
+        .shake { animation:shake .42s ease; }
 
-        /* 버린 감정 보기 버튼 */
-        .history-btn {
-            position: fixed; bottom: 26px; right: 26px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);
-            border: 1px solid rgba(255,255,255,0.18); border-radius: 25px;
-            font-size: 0.8rem; cursor: pointer;
-            font-family: 'Noto Sans KR', sans-serif;
-            backdrop-filter: blur(8px); transition: all 0.2s; z-index: 10;
-        }
-        .history-btn:hover { background: rgba(255,255,255,0.18); color: white; }
+        .history-btn { position:fixed; bottom:26px; right:26px; padding:10px 20px; background:rgba(255,255,255,.1); color:rgba(255,255,255,.7); border:1px solid rgba(255,255,255,.18); border-radius:25px; font-size:.8rem; cursor:pointer; font-family:'Noto Sans KR',sans-serif; backdrop-filter:blur(8px); transition:all .2s; z-index:10; }
+        .history-btn:hover { background:rgba(255,255,255,.18); color:white; }
 
         /* 히스토리 모달 */
-        .history-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.55);
-            z-index: 200; display: flex; align-items: flex-end; justify-content: center;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.3s; backdrop-filter: blur(4px);
-        }
-        .history-overlay.open { opacity: 1; pointer-events: all; }
+        .history-overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:200; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; backdrop-filter:blur(4px); }
+        .history-overlay.open { opacity:1; pointer-events:all; }
+        .history-panel { background:#1b2645; border-radius:22px 22px 0 0; width:100%; max-width:500px; max-height:72vh; padding:20px 22px 28px; transform:translateY(100%); transition:transform .4s cubic-bezier(.34,1.15,.64,1); display:flex; flex-direction:column; gap:14px; border-top:1px solid rgba(255,255,255,.08); }
+        .history-overlay.open .history-panel { transform:translateY(0); }
+        .history-handle { width:38px; height:4px; background:rgba(255,255,255,.18); border-radius:2px; margin:0 auto -6px; }
+        .history-header { display:flex; justify-content:space-between; align-items:center; }
+        .history-title { font-size:.98rem; font-weight:700; color:white; }
+        .history-close { background:rgba(255,255,255,.1); border:none; color:rgba(255,255,255,.55); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:.9rem; transition:background .2s; }
+        .history-close:hover { background:rgba(255,255,255,.2); color:white; }
+        .history-list { overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
+        .history-list::-webkit-scrollbar { width:3px; }
+        .history-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:2px; }
+        .history-item { background:#FFE566; border-radius:6px; padding:13px 14px 11px; position:relative; box-shadow:2px 2px 0 rgba(0,0,0,.15); }
+        .history-item::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background:rgba(0,0,0,.08); border-radius:6px 6px 0 0; }
+        .history-item-text { font-size:.84rem; color:#3a2d00; line-height:1.65; white-space:pre-wrap; word-break:break-all; margin-top:4px; }
+        .history-item-date { font-size:.68rem; color:rgba(60,45,0,.5); margin-top:8px; }
+        .history-empty { text-align:center; color:rgba(255,255,255,.28); font-size:.85rem; padding:2.5rem 0; line-height:2; }
+        .history-clear-btn { background:rgba(231,76,60,.12); border:1px solid rgba(231,76,60,.28); color:rgba(231,76,60,.75); border-radius:10px; padding:9px; font-size:.78rem; cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:all .2s; flex-shrink:0; }
+        .history-clear-btn:hover { background:rgba(231,76,60,.22); color:#e74c3c; }
 
-        .history-panel {
-            background: #1b2645; border-radius: 22px 22px 0 0;
-            width: 100%; max-width: 500px; max-height: 72vh;
-            padding: 20px 22px 28px;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.34,1.15,0.64,1);
-            display: flex; flex-direction: column; gap: 14px;
-            border-top: 1px solid rgba(255,255,255,0.08);
-        }
-        .history-overlay.open .history-panel { transform: translateY(0); }
+        .spinner { width:18px; height:18px; border:2px solid rgba(255,255,255,.2); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; display:inline-block; }
+        @keyframes spin { to{transform:rotate(360deg)} }
 
-        .history-handle { width: 38px; height: 4px; background: rgba(255,255,255,0.18); border-radius: 2px; margin: 0 auto -6px; }
-        .history-header { display: flex; justify-content: space-between; align-items: center; }
-        .history-title { font-size: 0.98rem; font-weight: 700; color: white; }
-        .history-close {
-            background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.55);
-            width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; transition: background 0.2s;
+        /* Supabase 미설정 배너 */
+        #setupBanner {
+            position:fixed; top:0; left:0; right:0; z-index:300;
+            background:#e74c3c; color:white;
+            padding:12px 20px; text-align:center;
+            font-size:.82rem; font-weight:500; display:none;
         }
-        .history-close:hover { background: rgba(255,255,255,0.2); color: white; }
 
-        .history-list { overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .history-list::-webkit-scrollbar { width: 3px; }
-        .history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
-
-        .history-item {
-            background: #FFE566; border-radius: 6px;
-            padding: 13px 14px 11px; position: relative;
-            box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
-        }
-        .history-item::before {
-            content: ''; position: absolute;
-            top: 0; left: 0; right: 0; height: 5px;
-            background: rgba(0,0,0,0.08); border-radius: 6px 6px 0 0;
-        }
-        .history-item-text {
-            font-size: 0.84rem; color: #3a2d00; line-height: 1.65;
-            white-space: pre-wrap; word-break: break-all; margin-top: 4px;
-        }
-        .history-item-date { font-size: 0.68rem; color: rgba(60,45,0,0.5); margin-top: 8px; }
-
-        .history-empty {
-            text-align: center; color: rgba(255,255,255,0.28);
-            font-size: 0.85rem; padding: 2.5rem 0; line-height: 2;
-        }
-        .history-clear-btn {
-            background: rgba(231,76,60,0.12); border: 1px solid rgba(231,76,60,0.28);
-            color: rgba(231,76,60,0.75); border-radius: 10px; padding: 9px;
-            font-size: 0.78rem; cursor: pointer;
-            font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s; flex-shrink: 0;
-        }
-        .history-clear-btn:hover { background: rgba(231,76,60,0.22); color: #e74c3c; }
-
-        /* 로딩 스피너 */
-        .spinner {
-            width: 18px; height: 18px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            display: inline-block;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 600px) {
-            .main-layout { flex-direction: column; gap: 2.5rem; }
-            .title-area h1 { font-size: 1.5rem; }
-            .auth-card { width: 90vw; padding: 28px 22px 24px; }
+        @media (max-width:600px) {
+            .main-layout { flex-direction:column; gap:2.5rem; }
+            .title-area h1 { font-size:1.5rem; }
+            .auth-card { width:90vw; padding:28px 22px 24px; }
         }
     </style>
 </head>
 <body>
 
+<!-- Supabase 미설정 경고 -->
+<div id="setupBanner">
+    ⚠️ Supabase URL / Key가 설정되지 않았어요. HTML 파일 상단의 주석을 참고해 설정해주세요.
+</div>
+
 <div class="stars" id="stars"></div>
 
-<!-- ══════════════════════════════
-     로그인 / 회원가입 화면
-══════════════════════════════ -->
+<!-- 로그인 / 회원가입 -->
 <div id="authScreen">
     <div class="auth-card">
         <div>
             <div class="auth-title">🌙 감정 쓰레기통</div>
             <div class="auth-subtitle">나만의 감정 버리기 공간</div>
         </div>
-
         <div class="auth-tabs">
             <button class="auth-tab active" id="tabLogin"  onclick="switchTab('login')">로그인</button>
             <button class="auth-tab"        id="tabSignup" onclick="switchTab('signup')">회원가입</button>
         </div>
-
         <div class="auth-form">
             <input class="auth-input" id="authEmail"    type="email"    placeholder="이메일" autocomplete="email"/>
             <input class="auth-input" id="authPassword" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"/>
             <div class="auth-success" id="authSuccess"></div>
             <div class="auth-error"   id="authError"></div>
-            <button class="auth-btn" id="authSubmit" onclick="submitAuth()">로그인</button>
+            <button class="auth-btn"  id="authSubmit"   onclick="submitAuth()">로그인</button>
         </div>
     </div>
 </div>
 
-<!-- ══════════════════════════════
-     메인 화면
-══════════════════════════════ -->
+<!-- 메인 화면 -->
 <div id="mainScreen">
-
-    <!-- 유저 바 -->
     <div class="user-bar">
         <span class="user-email" id="userEmailLabel"></span>
         <button class="logout-btn" onclick="logout()">로그아웃</button>
     </div>
-
     <div class="title-area">
         <h1>🌙 오늘의 감정 버리기</h1>
         <p>부정적인 감정을 적고, 구겨서 쓰레기통에 던져버려요</p>
     </div>
-
     <div class="main-layout">
-        <!-- 포스트잇 -->
         <div class="postit-area">
             <p class="postit-instruction">오늘 당신을 힘들게 했던 일들을 한 번 적어보세요.</p>
             <div id="postit">
@@ -477,8 +300,6 @@
             </div>
             <button class="crumple-btn" id="crumpleBtn" onclick="crumplePaper()">✊ 구기기</button>
         </div>
-
-        <!-- 쓰레기통 -->
         <div class="trash-section" id="trashSection">
             <svg id="trashCanSvg" viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">
                 <g id="trashLid">
@@ -497,20 +318,13 @@
             <div class="count-badge" id="countBadge">버린 감정: 0개</div>
         </div>
     </div>
-
     <button class="history-btn" onclick="openHistory()">📋 버린 감정 보기</button>
 </div>
 
-<!-- 구겨진 볼 -->
 <div id="crumpledBall"></div>
-
-<!-- 힌트 -->
 <div id="dragHint">👆 구겨진 메모를 쓰레기통으로 드래그해서 던져요!</div>
-
-<!-- 성공 메시지 -->
 <div id="successMsg"></div>
 
-<!-- 히스토리 패널 -->
 <div class="history-overlay" id="historyOverlay" onclick="closeHistoryIfOutside(event)">
     <div class="history-panel">
         <div class="history-handle"></div>
@@ -524,16 +338,28 @@
 </div>
 
 <script>
-/* ════════════════════════════════════════
-   상태
-════════════════════════════════════════ */
-let token       = localStorage.getItem('emotion_token') || '';
-let currentUser = null;
-let throwCount  = 0;
+/* ══════════════════════════════════════════
+   Supabase 설정 — 여기에 본인 값 입력
+══════════════════════════════════════════ */
+const SUPABASE_URL      = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+/* ══════════════════════════════════════════
+   초기화
+══════════════════════════════════════════ */
+const isConfigured = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
+if (!isConfigured) document.getElementById('setupBanner').style.display = 'block';
+
+const db = isConfigured
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+let authMode    = 'login';
+let isCrumpled  = false;
 let isDragging  = false;
 let dragOffsetX = 0, dragOffsetY = 0;
-let isCrumpled  = false;
 let pendingText = '';
+let throwCount  = 0;
 
 const MESSAGES = [
     '✨ 잘 버렸어요! 홀가분하죠?',
@@ -545,9 +371,7 @@ const MESSAGES = [
     '☁️ 구름처럼 흘려보냈어요!',
 ];
 
-/* ════════════════════════════════════════
-   별 생성
-════════════════════════════════════════ */
+/* 별 생성 */
 const starsEl = document.getElementById('stars');
 for (let i = 0; i < 70; i++) {
     const s = document.createElement('div');
@@ -561,77 +385,96 @@ for (let i = 0; i < 70; i++) {
     starsEl.appendChild(s);
 }
 
-/* ════════════════════════════════════════
-   인증
-════════════════════════════════════════ */
-let authMode = 'login';
+/* Supabase 세션 감지 — 자동 로그인/로그아웃 처리 */
+if (db) {
+    db.auth.onAuthStateChange((_event, session) => {
+        if (session) {
+            document.getElementById('userEmailLabel').textContent = session.user.email;
+            showMain();
+        } else {
+            showAuth();
+        }
+    });
+}
 
+/* ══════════════════════════════════════════
+   인증 UI
+══════════════════════════════════════════ */
 function switchTab(mode) {
     authMode = mode;
     document.getElementById('tabLogin' ).classList.toggle('active', mode === 'login');
     document.getElementById('tabSignup').classList.toggle('active', mode === 'signup');
-    document.getElementById('authSubmit').textContent = mode === 'login' ? '로그인' : '회원가입';
+    document.getElementById('authSubmit').textContent  = mode === 'login' ? '로그인' : '회원가입';
     document.getElementById('authError').textContent   = '';
     document.getElementById('authSuccess').textContent = '';
     document.getElementById('authPassword').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
 }
 
 async function submitAuth() {
+    if (!isConfigured) {
+        document.getElementById('authError').textContent = 'Supabase 설정이 필요해요. HTML 상단 주석을 확인해주세요.';
+        return;
+    }
+
     const email    = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
     const errEl    = document.getElementById('authError');
     const okEl     = document.getElementById('authSuccess');
     const btn      = document.getElementById('authSubmit');
 
-    errEl.textContent = '';
-    okEl.textContent  = '';
+    errEl.textContent = ''; okEl.textContent = '';
 
-    if (!email || !password) {
-        errEl.textContent = '이메일과 비밀번호를 입력하세요.';
-        return;
-    }
-    if (authMode === 'signup' && password.length < 6) {
-        errEl.textContent = '비밀번호는 6자 이상이어야 해요.';
-        return;
-    }
+    if (!email || !password)     { errEl.textContent = '이메일과 비밀번호를 입력하세요.'; return; }
+    if (password.length < 6)     { errEl.textContent = '비밀번호는 6자 이상이어야 해요.'; return; }
 
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>';
 
     try {
-        const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
-        const res  = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '오류가 발생했습니다.');
-
         if (authMode === 'signup') {
-            /* 회원가입 완료 → 로그인 탭으로 이동, 이메일 유지 */
-            okEl.textContent = '✅ 가입 완료! 이제 로그인해주세요.';
+            const { error } = await db.auth.signUp({ email, password });
+            if (error) throw error;
+            /* 회원가입 완료 → 로그인 탭으로 전환 */
             document.getElementById('authPassword').value = '';
             switchTab('login');
-            /* 성공 메시지는 탭 전환 후에도 남도록 재설정 */
             document.getElementById('authSuccess').textContent = '✅ 가입 완료! 같은 이메일과 비밀번호로 로그인하세요.';
         } else {
-            /* 로그인 성공 → 메인 화면 */
-            token = data.token;
-            currentUser = data.user;
-            localStorage.setItem('emotion_token', token);
-            enterMain();
+            const { error } = await db.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            /* 로그인 성공 → onAuthStateChange 가 자동으로 메인 화면 전환 */
         }
     } catch (e) {
-        if (e.message === 'Failed to fetch') {
-            errEl.textContent = '서버에 연결할 수 없어요. node server.js를 실행했는지 확인해주세요.';
-        } else {
-            errEl.textContent = e.message;
-        }
+        errEl.textContent = translateError(e.message);
     } finally {
         btn.disabled = false;
         btn.textContent = authMode === 'login' ? '로그인' : '회원가입';
     }
+}
+
+function translateError(msg) {
+    if (!msg) return '오류가 발생했어요.';
+    if (msg.includes('User already registered'))    return '이미 가입된 이메일이에요.';
+    if (msg.includes('Invalid login credentials'))  return '이메일 또는 비밀번호가 틀렸어요.';
+    if (msg.includes('Email not confirmed'))        return '이메일 인증이 필요해요. 받은 편지함을 확인해주세요.';
+    if (msg.includes('Password should be at least'))return '비밀번호는 6자 이상이어야 해요.';
+    if (msg.includes('Unable to validate email'))   return '올바른 이메일 형식이 아니에요.';
+    if (msg.includes('fetch') || msg.includes('Failed')) return 'Supabase URL/Key를 확인해주세요.';
+    return msg;
+}
+
+async function logout() {
+    if (db) await db.auth.signOut();
+}
+
+function showMain() {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('mainScreen').classList.add('visible');
+    loadThrowCount();
+}
+function showAuth() {
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('mainScreen').classList.remove('visible');
+    resetPostit();
 }
 
 /* Enter 키 */
@@ -639,62 +482,26 @@ async function submitAuth() {
     document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') submitAuth(); })
 );
 
-/* 페이지 로드 시 토큰 확인 */
-(async function init() {
-    /* 서버 미실행 시 경고 */
-    try {
-        await fetch('/api/status');
-    } catch {
-        document.getElementById('authError').textContent =
-            '⚠️ 서버가 꺼져 있어요. 터미널에서 node server.js를 실행해주세요.';
-        return;
-    }
-
-    if (!token) return;
-    try {
-        const res = await fetch('/api/emotions', { headers: { Authorization: 'Bearer ' + token } });
-        if (!res.ok) throw new Error();
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        currentUser = { id: payload.id, email: payload.email };
-        enterMain();
-    } catch {
-        localStorage.removeItem('emotion_token');
-        token = '';
-    }
-})();
-
-function enterMain() {
-    document.getElementById('authScreen').style.display = 'none';
-    document.getElementById('mainScreen').classList.add('visible');
-    document.getElementById('userEmailLabel').textContent = currentUser.email;
-    loadThrowCount();
-}
-
-function logout() {
-    localStorage.removeItem('emotion_token');
-    token = ''; currentUser = null;
-    document.getElementById('authScreen').style.display = 'flex';
-    document.getElementById('mainScreen').classList.remove('visible');
-    document.getElementById('authEmail').value = '';
-    document.getElementById('authPassword').value = '';
-    // 메인 상태 초기화
-    resetPostit();
-    document.getElementById('countBadge').textContent = '버린 감정: 0개';
-    throwCount = 0;
-}
-
+/* ══════════════════════════════════════════
+   감정 데이터
+══════════════════════════════════════════ */
 async function loadThrowCount() {
-    try {
-        const res  = await fetch('/api/emotions', { headers: { Authorization: 'Bearer ' + token } });
-        const list = await res.json();
-        throwCount = list.length;
+    if (!db) return;
+    const { data } = await db.from('emotions').select('id');
+    if (data) {
+        throwCount = data.length;
         document.getElementById('countBadge').textContent = `버린 감정: ${throwCount}개`;
-    } catch {}
+    }
 }
 
-/* ════════════════════════════════════════
+async function saveEmotionToDB(text) {
+    if (!db) return;
+    await db.from('emotions').insert({ text });
+}
+
+/* ══════════════════════════════════════════
    구기기
-════════════════════════════════════════ */
+══════════════════════════════════════════ */
 function crumplePaper() {
     if (isCrumpled) return;
     const text = document.getElementById('memo').value.trim();
@@ -715,77 +522,62 @@ function crumplePaper() {
     postit.addEventListener('animationend', () => {
         postit.style.visibility = 'hidden';
         const ball = document.getElementById('crumpledBall');
-        ball.style.left      = (rect.left + rect.width  / 2 - 34) + 'px';
-        ball.style.top       = (rect.top  + rect.height / 2 - 34) + 'px';
+        ball.style.left = (rect.left + rect.width  / 2 - 34) + 'px';
+        ball.style.top  = (rect.top  + rect.height / 2 - 34) + 'px';
         ball.style.transform = 'scale(0)';
         ball.style.display   = 'block';
         ball.style.opacity   = '1';
-
         requestAnimationFrame(() => {
-            ball.style.transition = 'transform 0.32s cubic-bezier(0.34,1.6,0.64,1)';
+            ball.style.transition = 'transform .32s cubic-bezier(.34,1.6,.64,1)';
             ball.style.transform  = 'scale(1)';
         });
-
         document.getElementById('dragHint').style.display = 'block';
         isCrumpled = true;
         attachDrag();
     }, { once: true });
 }
 
-/* ════════════════════════════════════════
+/* ══════════════════════════════════════════
    드래그
-════════════════════════════════════════ */
+══════════════════════════════════════════ */
 function attachDrag() {
-    const ball = document.getElementById('crumpledBall');
-    ball.addEventListener('mousedown',  onMouseDown);
-    ball.addEventListener('touchstart', onTouchStart, { passive: false });
+    const b = document.getElementById('crumpledBall');
+    b.addEventListener('mousedown',  onMouseDown);
+    b.addEventListener('touchstart', onTouchStart, { passive: false });
 }
 function detachDrag() {
-    const ball = document.getElementById('crumpledBall');
-    ball.removeEventListener('mousedown',  onMouseDown);
-    ball.removeEventListener('touchstart', onTouchStart);
+    const b = document.getElementById('crumpledBall');
+    b.removeEventListener('mousedown',  onMouseDown);
+    b.removeEventListener('touchstart', onTouchStart);
 }
 
 function onMouseDown(e) {
-    e.preventDefault();
-    startDrag(e.clientX, e.clientY);
+    e.preventDefault(); startDrag(e.clientX, e.clientY);
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup',   onMouseUp);
 }
 function onTouchStart(e) {
-    e.preventDefault();
-    const t = e.touches[0];
-    startDrag(t.clientX, t.clientY);
+    e.preventDefault(); const t = e.touches[0]; startDrag(t.clientX, t.clientY);
     document.addEventListener('touchmove', onTouchMove, { passive: false });
     document.addEventListener('touchend',  onTouchEnd);
 }
-
 function startDrag(cx, cy) {
-    const ball = document.getElementById('crumpledBall');
-    const r    = ball.getBoundingClientRect();
-    dragOffsetX = cx - r.left; dragOffsetY = cy - r.top;
-    isDragging  = true;
-    ball.style.transition = 'none';
-    ball.style.transform  = 'scale(1.12)';
-    ball.style.zIndex     = '700';
+    const r = document.getElementById('crumpledBall').getBoundingClientRect();
+    dragOffsetX = cx - r.left; dragOffsetY = cy - r.top; isDragging = true;
+    const b = document.getElementById('crumpledBall');
+    b.style.transition = 'none'; b.style.transform = 'scale(1.12)'; b.style.zIndex = '700';
 }
-
 function onMouseMove(e) { if (isDragging) moveBall(e.clientX, e.clientY); }
 function onTouchMove(e) { e.preventDefault(); if (isDragging) moveBall(e.touches[0].clientX, e.touches[0].clientY); }
-
 function moveBall(cx, cy) {
-    const ball  = document.getElementById('crumpledBall');
-    ball.style.left = (cx - dragOffsetX) + 'px';
-    ball.style.top  = (cy - dragOffsetY) + 'px';
-
+    const b = document.getElementById('crumpledBall');
+    b.style.left = (cx - dragOffsetX) + 'px';
+    b.style.top  = (cy - dragOffsetY) + 'px';
     const near  = isNearTrash(cx, cy);
-    const trash = document.getElementById('trashSection');
-    const lid   = document.getElementById('trashLid');
-    ball.classList.toggle('over-trash', near);
-    trash.classList.toggle('highlight', near);
-    lid.classList.toggle('open', near);
+    b.classList.toggle('over-trash', near);
+    document.getElementById('trashSection').classList.toggle('highlight', near);
+    document.getElementById('trashLid').classList.toggle('open', near);
 }
-
 function onMouseUp(e) {
     isDragging = false;
     document.removeEventListener('mousemove', onMouseMove);
@@ -796,36 +588,29 @@ function onTouchEnd(e) {
     isDragging = false;
     document.removeEventListener('touchmove', onTouchMove);
     document.removeEventListener('touchend',  onTouchEnd);
-    const t = e.changedTouches[0];
-    checkDrop(t.clientX, t.clientY);
+    const t = e.changedTouches[0]; checkDrop(t.clientX, t.clientY);
 }
-
 function isNearTrash(cx, cy) {
     const r = document.getElementById('trashSection').getBoundingClientRect();
-    return cx > r.left - 35 && cx < r.right + 35 && cy > r.top - 35 && cy < r.bottom + 35;
+    return cx > r.left-35 && cx < r.right+35 && cy > r.top-35 && cy < r.bottom+35;
 }
-
 function checkDrop(cx, cy) {
-    const trash = document.getElementById('trashSection');
-    const lid   = document.getElementById('trashLid');
-    trash.classList.remove('highlight');
-
+    document.getElementById('trashSection').classList.remove('highlight');
+    document.getElementById('trashLid').classList.remove('open');
     if (isNearTrash(cx, cy)) {
-        lid.classList.remove('open');
         throwIn();
     } else {
-        lid.classList.remove('open');
-        const ball = document.getElementById('crumpledBall');
-        ball.classList.remove('over-trash');
-        ball.style.transition = 'transform 0.35s cubic-bezier(0.34,1.6,0.64,1)';
-        ball.style.transform  = 'scale(1)';
+        const b = document.getElementById('crumpledBall');
+        b.classList.remove('over-trash');
+        b.style.transition = 'transform .35s cubic-bezier(.34,1.6,.64,1)';
+        b.style.transform  = 'scale(1)';
     }
 }
 
-/* ════════════════════════════════════════
+/* ══════════════════════════════════════════
    던지기
-════════════════════════════════════════ */
-async function throwIn() {
+══════════════════════════════════════════ */
+function throwIn() {
     detachDrag();
     const ball  = document.getElementById('crumpledBall');
     const trash = document.getElementById('trashCanSvg');
@@ -834,22 +619,19 @@ async function throwIn() {
 
     lid.classList.add('open');
     ball.classList.remove('over-trash');
-    ball.style.transition = 'left 0.3s ease-in, top 0.3s ease-in, transform 0.3s ease-in, opacity 0.3s ease-in';
+    ball.style.transition = 'left .3s ease-in, top .3s ease-in, transform .3s ease-in, opacity .3s ease-in';
     ball.style.left       = (tr.left + tr.width  / 2 - 34) + 'px';
     ball.style.top        = (tr.top  + tr.height * 0.52 - 34) + 'px';
     ball.style.transform  = 'scale(0.05) rotate(720deg)';
     ball.style.opacity    = '0';
 
-    // 서버에 저장 (애니메이션과 병렬)
-    saveEmotionToServer(pendingText);
+    saveEmotionToDB(pendingText);   /* 서버 저장 (병렬) */
 
     setTimeout(() => {
         ball.style.display = 'none';
         lid.classList.remove('open');
-
         shakeTrash();
         createParticles(tr.left + tr.width / 2, tr.top + tr.height * 0.5);
-
         throwCount++;
         document.getElementById('countBadge').textContent = `버린 감정: ${throwCount}개`;
         showMsg(MESSAGES[Math.floor(Math.random() * MESSAGES.length)]);
@@ -857,58 +639,40 @@ async function throwIn() {
     }, 310);
 }
 
-async function saveEmotionToServer(text) {
-    try {
-        await fetch('/api/emotions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-            body: JSON.stringify({ text })
-        });
-    } catch {}
-}
-
-/* ════════════════════════════════════════
-   리셋
-════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   리셋 / 유틸
+══════════════════════════════════════════ */
 function resetPostit() {
     const postit = document.getElementById('postit');
-    postit.classList.remove('crumpling');
-    postit.style.visibility = '';
-    const memo = document.getElementById('memo');
-    memo.value = ''; memo.disabled = false;
+    postit.classList.remove('crumpling'); postit.style.visibility = '';
+    document.getElementById('memo').value = '';
+    document.getElementById('memo').disabled = false;
     document.getElementById('crumpleBtn').disabled = false;
     document.getElementById('dragHint').style.display = 'none';
     isCrumpled = false; pendingText = '';
 }
 
-/* ════════════════════════════════════════
-   쓰레기통 흔들기 / 파티클
-════════════════════════════════════════ */
 function shakeTrash() {
     const svg = document.getElementById('trashCanSvg');
-    const seq = [-10,10,-7,7,-3,3,0];
-    let i = 0;
+    const seq = [-10,10,-7,7,-3,3,0]; let i = 0;
     const t = setInterval(() => {
-        svg.style.transition = 'transform 0.06s ease';
-        svg.style.transform  = `rotate(${seq[i] || 0}deg)`;
-        if (++i >= seq.length) { clearInterval(t); setTimeout(() => svg.style.transform = '', 60); }
+        svg.style.transition = 'transform .06s ease';
+        svg.style.transform  = `rotate(${seq[i]||0}deg)`;
+        if (++i >= seq.length) { clearInterval(t); setTimeout(() => svg.style.transform='',60); }
     }, 65);
 }
 
 function createParticles(x, y) {
     const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#ff6eb4','#FFE566','#a29bfe'];
     for (let i = 0; i < 18; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
+        const p = document.createElement('div'); p.className = 'particle';
         p.style.left = (x-4)+'px'; p.style.top = (y-4)+'px';
-        p.style.background = colors[i % colors.length];
-        const angle = (i/18)*360 + Math.random()*12;
-        const dist  = 48 + Math.random()*58;
-        p.style.setProperty('--px',  Math.cos(angle*Math.PI/180)*dist+'px');
-        p.style.setProperty('--py',  Math.sin(angle*Math.PI/180)*dist+'px');
-        p.style.setProperty('--dur', (0.55+Math.random()*0.35)+'s');
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 900);
+        p.style.background = colors[i%colors.length];
+        const angle = (i/18)*360+Math.random()*12, dist = 48+Math.random()*58;
+        p.style.setProperty('--px', Math.cos(angle*Math.PI/180)*dist+'px');
+        p.style.setProperty('--py', Math.sin(angle*Math.PI/180)*dist+'px');
+        p.style.setProperty('--dur', (.55+Math.random()*.35)+'s');
+        document.body.appendChild(p); setTimeout(() => p.remove(), 900);
     }
 }
 
@@ -918,52 +682,49 @@ function showMsg(text) {
     setTimeout(() => el.classList.remove('show'), 2600);
 }
 
-/* ════════════════════════════════════════
+/* ══════════════════════════════════════════
    히스토리
-════════════════════════════════════════ */
+══════════════════════════════════════════ */
 function openHistory() {
     document.getElementById('historyOverlay').classList.add('open');
-    loadHistoryFromServer();
+    loadHistory();
 }
 function closeHistory() { document.getElementById('historyOverlay').classList.remove('open'); }
 function closeHistoryIfOutside(e) { if (e.target === document.getElementById('historyOverlay')) closeHistory(); }
 
-async function loadHistoryFromServer() {
+async function loadHistory() {
     const el = document.getElementById('historyList');
     el.innerHTML = '<div class="history-empty"><span class="spinner"></span></div>';
-    try {
-        const res  = await fetch('/api/emotions', { headers: { Authorization: 'Bearer ' + token } });
-        const list = await res.json();
-        throwCount = list.length;
-        document.getElementById('countBadge').textContent = `버린 감정: ${throwCount}개`;
-        renderHistory(list);
-    } catch {
-        el.innerHTML = '<div class="history-empty">불러오는 중 오류가 발생했어요 😢</div>';
-    }
-}
+    if (!db) { el.innerHTML = '<div class="history-empty">Supabase 설정이 필요해요.</div>'; return; }
 
-function renderHistory(list) {
-    const el = document.getElementById('historyList');
-    if (!list.length) {
+    const { data, error } = await db.from('emotions').select('*').order('created_at', { ascending: false });
+    if (error) { el.innerHTML = '<div class="history-empty">불러오기 실패 😢</div>'; return; }
+
+    throwCount = data.length;
+    document.getElementById('countBadge').textContent = `버린 감정: ${throwCount}개`;
+
+    if (!data.length) {
         el.innerHTML = '<div class="history-empty">아직 버린 감정이 없어요 🌙<br>오늘의 감정을 버려볼까요?</div>';
         return;
     }
-    el.innerHTML = list.map(item => `
-        <div class="history-item">
+    el.innerHTML = data.map(item => {
+        const d = new Date(item.created_at);
+        const dateStr = d.toLocaleString('ko-KR', { month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+        return `<div class="history-item">
             <div class="history-item-text">${esc(item.text)}</div>
-            <div class="history-item-date">🗑️ ${item.date}에 버렸어요</div>
-        </div>
-    `).join('');
+            <div class="history-item-date">🗑️ ${dateStr}에 버렸어요</div>
+        </div>`;
+    }).join('');
 }
 
 async function clearHistory() {
     if (!confirm('버렸던 감정 기록을 모두 지울까요?')) return;
-    try {
-        await fetch('/api/emotions', { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
-        throwCount = 0;
-        document.getElementById('countBadge').textContent = '버린 감정: 0개';
-        renderHistory([]);
-    } catch {}
+    if (!db) return;
+    const { data: { user } } = await db.auth.getUser();
+    await db.from('emotions').delete().eq('user_id', user.id);
+    throwCount = 0;
+    document.getElementById('countBadge').textContent = '버린 감정: 0개';
+    loadHistory();
 }
 
 function esc(s) {
