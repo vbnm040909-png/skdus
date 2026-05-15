@@ -135,6 +135,13 @@
             text-align: center;
             min-height: 18px;
         }
+        .auth-success {
+            font-size: 0.78rem;
+            color: #6bcb77;
+            text-align: center;
+            min-height: 18px;
+            font-weight: 500;
+        }
 
         /* ════════════════════════════════
            메인 화면
@@ -438,7 +445,8 @@
         <div class="auth-form">
             <input class="auth-input" id="authEmail"    type="email"    placeholder="이메일" autocomplete="email"/>
             <input class="auth-input" id="authPassword" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"/>
-            <div class="auth-error" id="authError"></div>
+            <div class="auth-success" id="authSuccess"></div>
+            <div class="auth-error"   id="authError"></div>
             <button class="auth-btn" id="authSubmit" onclick="submitAuth()">로그인</button>
         </div>
     </div>
@@ -563,7 +571,8 @@ function switchTab(mode) {
     document.getElementById('tabLogin' ).classList.toggle('active', mode === 'login');
     document.getElementById('tabSignup').classList.toggle('active', mode === 'signup');
     document.getElementById('authSubmit').textContent = mode === 'login' ? '로그인' : '회원가입';
-    document.getElementById('authError').textContent = '';
+    document.getElementById('authError').textContent   = '';
+    document.getElementById('authSuccess').textContent = '';
     document.getElementById('authPassword').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
 }
 
@@ -571,13 +580,23 @@ async function submitAuth() {
     const email    = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
     const errEl    = document.getElementById('authError');
+    const okEl     = document.getElementById('authSuccess');
     const btn      = document.getElementById('authSubmit');
 
-    if (!email || !password) { errEl.textContent = '이메일과 비밀번호를 입력하세요.'; return; }
+    errEl.textContent = '';
+    okEl.textContent  = '';
+
+    if (!email || !password) {
+        errEl.textContent = '이메일과 비밀번호를 입력하세요.';
+        return;
+    }
+    if (authMode === 'signup' && password.length < 6) {
+        errEl.textContent = '비밀번호는 6자 이상이어야 해요.';
+        return;
+    }
 
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>';
-    errEl.textContent = '';
 
     try {
         const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
@@ -589,12 +608,26 @@ async function submitAuth() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || '오류가 발생했습니다.');
 
-        token = data.token;
-        currentUser = data.user;
-        localStorage.setItem('emotion_token', token);
-        enterMain();
+        if (authMode === 'signup') {
+            /* 회원가입 완료 → 로그인 탭으로 이동, 이메일 유지 */
+            okEl.textContent = '✅ 가입 완료! 이제 로그인해주세요.';
+            document.getElementById('authPassword').value = '';
+            switchTab('login');
+            /* 성공 메시지는 탭 전환 후에도 남도록 재설정 */
+            document.getElementById('authSuccess').textContent = '✅ 가입 완료! 같은 이메일과 비밀번호로 로그인하세요.';
+        } else {
+            /* 로그인 성공 → 메인 화면 */
+            token = data.token;
+            currentUser = data.user;
+            localStorage.setItem('emotion_token', token);
+            enterMain();
+        }
     } catch (e) {
-        errEl.textContent = e.message;
+        if (e.message === 'Failed to fetch') {
+            errEl.textContent = '서버에 연결할 수 없어요. node server.js를 실행했는지 확인해주세요.';
+        } else {
+            errEl.textContent = e.message;
+        }
     } finally {
         btn.disabled = false;
         btn.textContent = authMode === 'login' ? '로그인' : '회원가입';
@@ -608,6 +641,15 @@ async function submitAuth() {
 
 /* 페이지 로드 시 토큰 확인 */
 (async function init() {
+    /* 서버 미실행 시 경고 */
+    try {
+        await fetch('/api/status');
+    } catch {
+        document.getElementById('authError').textContent =
+            '⚠️ 서버가 꺼져 있어요. 터미널에서 node server.js를 실행해주세요.';
+        return;
+    }
+
     if (!token) return;
     try {
         const res = await fetch('/api/emotions', { headers: { Authorization: 'Bearer ' + token } });
