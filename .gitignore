@@ -1,0 +1,13 @@
+.env.local
+.env
+node_modules/
+hero_generated.png
+data/
+
+# 개인 사진/문서
+*.jpg
+*.jpeg
+*.png
+*.JPG
+*.JPEG
+*.PNG

@@ -1,0 +1,19 @@
+{
+  "name": "pet-match",
+  "version": "1.0.0",
+  "description": "댕냥구조대 - 유기동물 매칭 추천 웹서비스",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

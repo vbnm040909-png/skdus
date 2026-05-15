@@ -349,6 +349,127 @@
     header h1 { font-size: 1.5rem; }
     .chip { font-size: 0.85rem; padding: 8px 12px; }
   }
+
+  /* ── 헤더 인증 영역 ── */
+  .header-auth {
+    position: absolute;
+    top: 14px; right: 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .user-email {
+    font-size: 0.78rem; color: rgba(255,255,255,0.9);
+    max-width: 130px; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .btn-auth {
+    background: rgba(255,255,255,0.22);
+    border: 2px solid rgba(255,255,255,0.75);
+    color: #fff; border-radius: 20px;
+    padding: 7px 16px; font-size: 0.88rem;
+    font-weight: 600; cursor: pointer;
+    transition: background 0.2s; min-height: auto;
+  }
+  .btn-auth:hover { background: rgba(255,255,255,0.38); }
+  .btn-auth-logout {
+    background: rgba(255,255,255,0.88);
+    color: #f582ae;
+  }
+  .notif-btn {
+    position: relative; background: none; border: none;
+    font-size: 1.4rem; cursor: pointer; padding: 0;
+    min-height: auto; line-height: 1;
+    display: none; align-items: center; justify-content: center;
+  }
+  .notif-badge {
+    position: absolute; top: -4px; right: -6px;
+    background: #ff4d6d; color: #fff;
+    border-radius: 50%; min-width: 17px; height: 17px;
+    font-size: 0.65rem; font-weight: 700;
+    display: none; align-items: center;
+    justify-content: center; padding: 0 3px;
+  }
+  @media (max-width: 768px) {
+    .header-auth { top: 10px; right: 12px; gap: 6px; }
+    .user-email { display: none; }
+    .btn-auth { padding: 6px 12px; font-size: 0.82rem; }
+  }
+
+  /* ── 모달 공통 ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.48); z-index: 2000;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 20px;
+    padding: 36px 30px; width: 100%; max-width: 420px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    position: relative;
+    animation: mSlideUp 0.25s ease;
+  }
+  @keyframes mSlideUp {
+    from { transform: translateY(28px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; font-size: 1.3rem;
+    cursor: pointer; color: #aaa; padding: 0; min-height: auto;
+    line-height: 1;
+  }
+  .modal-close:hover { color: #555; }
+
+  /* ── 인증 모달 ── */
+  .modal-title {
+    font-size: 1.5rem; font-weight: 700;
+    text-align: center; margin-bottom: 4px; color: #001858;
+  }
+  .modal-subtitle {
+    text-align: center; font-size: 0.88rem;
+    color: #888; margin-bottom: 22px;
+  }
+  .modal-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .modal-field label { font-size: 0.9rem; font-weight: 600; color: #001858; }
+  .modal-field input {
+    padding: 12px 14px; border: 2px solid #e8d8c4;
+    border-radius: 10px; font-size: 1rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal-field input:focus { border-color: #f582ae; }
+  .modal-submit {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #f582ae 0%, #ff8c69 100%);
+    color: #fff; border: none; border-radius: 12px;
+    font-size: 1.05rem; font-weight: 700; cursor: pointer;
+    margin-top: 6px; transition: opacity 0.2s;
+  }
+  .modal-submit:hover { opacity: 0.88; }
+  .modal-switch {
+    text-align: center; margin-top: 14px;
+    font-size: 0.88rem; color: #666;
+  }
+  .modal-switch span {
+    color: #f582ae; font-weight: 600;
+    cursor: pointer; text-decoration: underline;
+  }
+  .modal-error {
+    color: #e74c3c; font-size: 0.85rem;
+    text-align: center; min-height: 18px; margin-top: 6px;
+  }
+
+  /* ── 알림 모달 ── */
+  .notif-list { max-height: 320px; overflow-y: auto; margin-top: 4px; }
+  .notif-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px; border-radius: 12px;
+    background: #fff8f0; border: 1px solid #fde0c0;
+    margin-bottom: 10px;
+  }
+  .notif-icon { font-size: 1.8rem; line-height: 1; }
+  .notif-text strong { display: block; font-size: 0.95rem; color: #001858; }
+  .notif-text span { font-size: 0.82rem; color: #888; }
+  .notif-empty { text-align: center; color: #aaa; padding: 28px 0; font-size: 0.95rem; }
 </style>
 </head>
 <body>
@@ -356,7 +477,43 @@
 <header>
   <h1>🐾 댕냥구조대</h1>
   <p>나의 라이프스타일에 꼭 맞는 유기동물 가족을 만나보세요</p>
+  <div class="header-auth">
+    <button class="notif-btn" id="notifBtn" title="알림">🔔<span class="notif-badge" id="notifBadge"></span></button>
+    <div id="authArea"><button class="btn-auth" id="loginBtn">로그인</button></div>
+  </div>
 </header>
+
+<!-- 인증 모달 -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" id="authModalClose">✕</button>
+    <div class="modal-title" id="authTitle">로그인</div>
+    <div class="modal-subtitle" id="authSubtitle">찜한 목록을 저장하고 입양 알림을 받아보세요</div>
+    <div class="modal-field">
+      <label>이메일</label>
+      <input type="email" id="authEmail" placeholder="이메일 주소" autocomplete="email"/>
+    </div>
+    <div class="modal-field">
+      <label>비밀번호</label>
+      <input type="password" id="authPw" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"/>
+    </div>
+    <div class="modal-error" id="authError"></div>
+    <button class="modal-submit" id="authSubmit">로그인</button>
+    <div class="modal-switch" id="authSwitch">
+      계정이 없으신가요? <span id="authSwitchBtn">회원가입</span>
+    </div>
+  </div>
+</div>
+
+<!-- 알림 모달 -->
+<div class="modal-overlay" id="notifModal">
+  <div class="modal-box">
+    <button class="modal-close" id="notifModalClose">✕</button>
+    <div class="modal-title">🔔 알림</div>
+    <div class="modal-subtitle">찜한 친구의 입양 완료 소식이에요</div>
+    <div class="notif-list" id="notifList"></div>
+  </div>
+</div>
 
 <div class="container">
 
@@ -652,9 +809,11 @@ function toggleFav(pet) {
   const idx = favorites.findIndex(f => f.id === pet.id);
   if (idx >= 0) {
     favorites.splice(idx, 1);
+    if (authToken) apiRemoveFav(pet.id);
     showToast(`💔 ${pet.name || '친구'} 찜 해제됨`);
   } else {
     favorites.push(pet);
+    if (authToken) apiAddFav(pet);
     showToast(`❤️ ${pet.name || '친구'} 찜 목록에 추가됨`);
   }
   saveFavorites();
@@ -921,9 +1080,15 @@ function attachCardHandlers(container, pets) {
   });
 }
 
-function renderFavorites() {
-  const grid = document.getElementById('favGrid');
+async function renderFavorites() {
+  const grid    = document.getElementById('favGrid');
   const summary = document.getElementById('favSummary');
+  if (authToken) {
+    grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>찜 목록 불러오는 중...</p></div>';
+    favorites = await apiFetchFavs();
+    updateFavCount();
+    saveFavorites();
+  }
   if (favorites.length === 0) {
     summary.textContent = '아직 찜한 친구가 없어요. 추천 결과에서 🤍 버튼을 눌러 저장해보세요.';
     grid.innerHTML = '';
@@ -934,8 +1099,213 @@ function renderFavorites() {
   attachCardHandlers(grid, favorites);
 }
 
+// ====== 인증 & 서버 동기화 ==========================================
+
+const AUTH_TOKEN_KEY = 'dangnyang_token';
+const AUTH_USER_KEY  = 'dangnyang_user';
+let authToken   = localStorage.getItem(AUTH_TOKEN_KEY) || null;
+let currentUser = JSON.parse(localStorage.getItem(AUTH_USER_KEY) || 'null');
+let authMode    = 'login';
+
+// ── 서버 API 헬퍼 ──────────────────────────────────────────────────
+async function apiFetchFavs() {
+  try {
+    const r = await fetch('/api/favorites', { headers: { Authorization: `Bearer ${authToken}` } });
+    if (r.status === 401) { clearAuth(); return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
+    return await r.json();
+  } catch { return favorites; }
+}
+async function apiAddFav(pet) {
+  if (!authToken) return;
+  try {
+    await fetch('/api/favorites', {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(pet)
+    });
+  } catch {}
+}
+async function apiRemoveFav(petId) {
+  if (!authToken) return;
+  try {
+    await fetch(`/api/favorites/${petId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+  } catch {}
+}
+
+// ── 인증 상태 관리 ─────────────────────────────────────────────────
+function setAuth(token, user) {
+  authToken   = token;
+  currentUser = user;
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
+  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+  renderAuthUI();
+}
+function clearAuth() {
+  authToken   = null;
+  currentUser = null;
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_USER_KEY);
+  renderAuthUI();
+}
+
+function renderAuthUI() {
+  const area     = document.getElementById('authArea');
+  const notifBtn = document.getElementById('notifBtn');
+  if (currentUser) {
+    area.innerHTML = `
+      <span class="user-email">👤 ${currentUser.email}</span>
+      <button class="btn-auth btn-auth-logout" id="logoutBtn">로그아웃</button>`;
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    notifBtn.style.display = 'inline-flex';
+    checkNotifBadge();
+  } else {
+    area.innerHTML = `<button class="btn-auth" id="loginBtn">로그인</button>`;
+    document.getElementById('loginBtn').addEventListener('click', () => openAuthModal('login'));
+    notifBtn.style.display = 'none';
+    document.getElementById('notifBadge').style.display = 'none';
+  }
+}
+
+async function handleLogout() {
+  saveFavorites();
+  clearAuth();
+  favorites = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+  updateFavCount();
+  showToast('로그아웃되었습니다');
+}
+
+// ── 인증 모달 ──────────────────────────────────────────────────────
+function openAuthModal(mode) {
+  authMode = mode;
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPw').value    = '';
+  document.getElementById('authError').textContent = '';
+  const isLogin = mode === 'login';
+  document.getElementById('authTitle').textContent    = isLogin ? '로그인' : '회원가입';
+  document.getElementById('authSubtitle').textContent = isLogin
+    ? '찜한 목록을 저장하고 입양 알림을 받아보세요'
+    : '무료로 가입하고 찜한 친구를 저장하세요';
+  document.getElementById('authSubmit').textContent = isLogin ? '로그인' : '가입하기';
+  document.getElementById('authSwitch').innerHTML = isLogin
+    ? '계정이 없으신가요? <span id="authSwitchBtn">회원가입</span>'
+    : '이미 계정이 있으신가요? <span id="authSwitchBtn">로그인</span>';
+  document.getElementById('authSwitchBtn').addEventListener('click', () =>
+    openAuthModal(authMode === 'login' ? 'signup' : 'login'));
+  document.getElementById('authModal').classList.add('open');
+  document.getElementById('authEmail').focus();
+}
+
+document.getElementById('authModalClose').addEventListener('click', () =>
+  document.getElementById('authModal').classList.remove('open'));
+document.getElementById('authModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('authModal'))
+    document.getElementById('authModal').classList.remove('open');
+});
+
+document.getElementById('authSubmit').addEventListener('click', async () => {
+  const email    = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPw').value;
+  const errEl    = document.getElementById('authError');
+  if (!email || !password) { errEl.textContent = '이메일과 비밀번호를 입력하세요.'; return; }
+  const url = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+  try {
+    const r    = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await r.json();
+    if (!r.ok) { errEl.textContent = data.error || '오류가 발생했어요.'; return; }
+    setAuth(data.token, data.user);
+    // 로컬 찜 목록을 서버에 병합
+    const localFavs = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+    for (const pet of localFavs) await apiAddFav(pet);
+    favorites = await apiFetchFavs();
+    updateFavCount();
+    saveFavorites();
+    document.getElementById('authModal').classList.remove('open');
+    showToast(`환영합니다, ${data.user.email.split('@')[0]}님! 🐾`);
+  } catch {
+    errEl.textContent = '서버 연결에 실패했어요. 잠시 후 다시 시도해주세요.';
+  }
+});
+
+// Enter 키로 로그인/가입
+document.getElementById('authPw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('authSubmit').click();
+});
+
+// ── 알림 ───────────────────────────────────────────────────────────
+async function checkNotifBadge() {
+  if (!authToken) return;
+  try {
+    const r      = await fetch('/api/notifications', { headers: { Authorization: `Bearer ${authToken}` } });
+    const notifs = await r.json();
+    const badge  = document.getElementById('notifBadge');
+    if (notifs.length > 0) {
+      badge.textContent   = notifs.length;
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch {}
+}
+
+document.getElementById('notifBtn').addEventListener('click', openNotifModal);
+async function openNotifModal() {
+  if (!authToken) return;
+  document.getElementById('notifModal').classList.add('open');
+  const list = document.getElementById('notifList');
+  list.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  try {
+    const r      = await fetch('/api/notifications', { headers: { Authorization: `Bearer ${authToken}` } });
+    const notifs = await r.json();
+    if (notifs.length === 0) {
+      list.innerHTML = '<div class="notif-empty">새로운 알림이 없어요 🐾</div>';
+      return;
+    }
+    list.innerHTML = notifs.map(n => `
+      <div class="notif-item">
+        <div class="notif-icon">💌</div>
+        <div class="notif-text">
+          <strong>${n.name || '찜한 친구'}의 입양이 완료됐어요!</strong>
+          <span>${n.shelter || ''}</span>
+        </div>
+      </div>`).join('');
+    // 읽음 처리
+    await fetch('/api/notifications/read', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ petIds: notifs.map(n => n.id) })
+    });
+    document.getElementById('notifBadge').style.display = 'none';
+  } catch {
+    list.innerHTML = '<div class="notif-empty">알림을 불러올 수 없어요.</div>';
+  }
+}
+
+document.getElementById('notifModalClose').addEventListener('click', () =>
+  document.getElementById('notifModal').classList.remove('open'));
+document.getElementById('notifModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('notifModal'))
+    document.getElementById('notifModal').classList.remove('open');
+});
+
 // ====== 초기화 ======
-updateFavCount();
+if (currentUser && authToken) {
+  renderAuthUI();
+  apiFetchFavs().then(favs => {
+    favorites = favs;
+    updateFavCount();
+    saveFavorites();
+  });
+} else {
+  renderAuthUI();
+  updateFavCount();
+}
 </script>
 
 </body>

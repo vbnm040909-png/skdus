@@ -1,0 +1,286 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" width="1200" height="520">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fef6e4"/>
+      <stop offset="100%" stop-color="#f3d2c1"/>
+    </linearGradient>
+    <radialGradient id="groundGrad" cx="50%" cy="80%">
+      <stop offset="0%" stop-color="#e0c8a8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#e0c8a8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="520" fill="url(#bgGrad)"/>
+
+  <!-- Ground shadow -->
+  <ellipse cx="600" cy="490" rx="560" ry="45" fill="url(#groundGrad)"/>
+
+  <!-- Decorative hearts -->
+  <g opacity="0.65">
+    <path d="M148,82 C148,74 138,67 128,74 C118,67 108,74 108,82 C108,97 128,110 128,110 C128,110 148,97 148,82Z" fill="#f582ae"/>
+    <path d="M1062,67 C1062,59 1052,52 1042,59 C1032,52 1022,59 1022,67 C1022,82 1042,95 1042,95 C1042,95 1062,82 1062,67Z" fill="#f582ae"/>
+    <path d="M815,44 C815,40 811,36 807,40 C803,36 799,40 799,44 C799,52 807,58 807,58 C807,58 815,52 815,44Z" fill="#ff8c69"/>
+    <path d="M392,58 C392,54 388,50 384,54 C380,50 376,54 376,58 C376,66 384,72 384,72 C384,72 392,66 392,58Z" fill="#f582ae"/>
+    <path d="M75,310 C75,306 71,302 67,306 C63,302 59,306 59,310 C59,318 67,324 67,324 C67,324 75,318 75,310Z" fill="#ffd6a5"/>
+    <path d="M1130,380 C1130,376 1126,372 1122,376 C1118,372 1114,376 1114,380 C1114,388 1122,394 1122,394 C1122,394 1130,388 1130,380Z" fill="#f582ae"/>
+  </g>
+
+  <!-- Sparkle stars -->
+  <g fill="#ffb347" opacity="0.7">
+    <polygon points="210,90 213,100 223,100 215,106 218,116 210,110 202,116 205,106 197,100 207,100"/>
+    <polygon points="980,75 982,82 989,82 984,86 986,93 980,89 974,93 976,86 971,82 978,82"/>
+    <polygon points="105,150 107,157 114,157 109,161 111,168 105,164 99,168 101,161 96,157 103,157"/>
+    <polygon points="1090,200 1092,207 1099,207 1094,211 1096,218 1090,214 1084,218 1086,211 1081,207 1088,207"/>
+  </g>
+
+  <!-- Paw prints (background decorative) -->
+  <g fill="#f582ae" opacity="0.2">
+    <circle cx="85" cy="215" r="11"/><circle cx="73" cy="201" r="7"/><circle cx="85" cy="196" r="7"/><circle cx="97" cy="201" r="7"/>
+    <circle cx="1105" cy="315" r="11"/><circle cx="1093" cy="301" r="7"/><circle cx="1105" cy="296" r="7"/><circle cx="1117" cy="301" r="7"/>
+    <circle cx="170" cy="395" r="9"/><circle cx="159" cy="383" r="6"/><circle cx="170" cy="378" r="6"/><circle cx="181" cy="383" r="6"/>
+    <circle cx="1040" cy="420" r="9"/><circle cx="1029" cy="408" r="6"/><circle cx="1040" cy="403" r="6"/><circle cx="1051" cy="408" r="6"/>
+  </g>
+
+  <!-- ===== WOMAN (center-left) ===== -->
+  <g id="woman">
+    <ellipse cx="535" cy="458" rx="42" ry="13" fill="#b89070" opacity="0.35"/>
+    <!-- Legs -->
+    <rect x="508" y="392" width="23" height="68" rx="9" fill="#FDBCB4"/>
+    <rect x="546" y="392" width="23" height="68" rx="9" fill="#FDBCB4"/>
+    <!-- Shoes -->
+    <ellipse cx="519" cy="459" rx="17" ry="9" fill="#001858"/>
+    <ellipse cx="558" cy="459" rx="17" ry="9" fill="#001858"/>
+    <!-- Dress -->
+    <path d="M488,242 L508,395 L572,395 L592,242 Z" fill="#f582ae"/>
+    <path d="M488,242 Q540,258 592,242 L588,274 Q540,290 492,274 Z" fill="#d9609a"/>
+    <!-- Torso -->
+    <rect x="504" y="226" width="72" height="52" rx="11" fill="#f582ae"/>
+    <!-- Arms -->
+    <path d="M504,242 Q472,294 462,334" stroke="#FDBCB4" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <path d="M576,242 Q608,284 614,318" stroke="#FDBCB4" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <circle cx="462" cy="334" r="13" fill="#FDBCB4"/>
+    <circle cx="614" cy="318" r="13" fill="#FDBCB4"/>
+    <!-- Neck -->
+    <rect x="522" y="212" width="26" height="20" rx="6" fill="#FDBCB4"/>
+    <!-- Head -->
+    <circle cx="535" cy="183" r="50" fill="#FDBCB4"/>
+    <!-- Long hair -->
+    <ellipse cx="535" cy="150" rx="50" ry="32" fill="#3d2b1f"/>
+    <path d="M485,162 Q476,255 487,335" stroke="#3d2b1f" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <path d="M585,162 Q594,248 582,328" stroke="#3d2b1f" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <!-- Eyes -->
+    <ellipse cx="519" cy="179" rx="10" ry="11" fill="#fff"/>
+    <ellipse cx="551" cy="179" rx="10" ry="11" fill="#fff"/>
+    <circle cx="520" cy="180" r="7" fill="#3d2b1f"/>
+    <circle cx="552" cy="180" r="7" fill="#3d2b1f"/>
+    <circle cx="522" cy="178" r="2.5" fill="#fff"/>
+    <circle cx="554" cy="178" r="2.5" fill="#fff"/>
+    <!-- Eyebrows -->
+    <path d="M511,166 Q519,161 527,166" stroke="#3d2b1f" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M543,166 Q551,161 559,166" stroke="#3d2b1f" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- Blush -->
+    <ellipse cx="505" cy="192" rx="13" ry="8" fill="#f582ae" opacity="0.38"/>
+    <ellipse cx="565" cy="192" rx="13" ry="8" fill="#f582ae" opacity="0.38"/>
+    <!-- Smile -->
+    <path d="M519,197 Q535,210 551,197" stroke="#c0554a" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- Dress collar -->
+    <path d="M510,226 Q535,240 560,226" stroke="#d9609a" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <!-- ===== MAN (center-right) ===== -->
+  <g id="man">
+    <ellipse cx="665" cy="458" rx="44" ry="13" fill="#b89070" opacity="0.35"/>
+    <!-- Legs -->
+    <rect x="636" y="382" width="26" height="78" rx="9" fill="#2c3e50"/>
+    <rect x="675" y="382" width="26" height="78" rx="9" fill="#2c3e50"/>
+    <!-- Shoes -->
+    <ellipse cx="649" cy="459" rx="20" ry="10" fill="#1a1a2e"/>
+    <ellipse cx="688" cy="459" rx="20" ry="10" fill="#1a1a2e"/>
+    <!-- Shirt -->
+    <rect x="622" y="232" width="83" height="155" rx="11" fill="#4a90d9"/>
+    <!-- Collar / V neck -->
+    <path d="M643,232 L663,252 L683,232" fill="#3a7abf"/>
+    <!-- Arms -->
+    <path d="M622,248 Q594,304 588,350" stroke="#4a90d9" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <path d="M705,248 Q733,298 740,340" stroke="#4a90d9" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <circle cx="588" cy="350" r="14" fill="#FDBCB4"/>
+    <circle cx="740" cy="340" r="14" fill="#FDBCB4"/>
+    <!-- Neck -->
+    <rect x="650" y="210" width="30" height="24" rx="6" fill="#FDBCB4"/>
+    <!-- Head -->
+    <circle cx="665" cy="178" r="52" fill="#FDBCB4"/>
+    <!-- Short hair -->
+    <path d="M613,163 Q617,120 665,112 Q713,120 717,163" fill="#3d2b1f"/>
+    <ellipse cx="665" cy="138" rx="52" ry="30" fill="#3d2b1f"/>
+    <!-- Eyes -->
+    <ellipse cx="648" cy="178" rx="10" ry="11" fill="#fff"/>
+    <ellipse cx="682" cy="178" rx="10" ry="11" fill="#fff"/>
+    <circle cx="649" cy="179" r="7" fill="#3d2b1f"/>
+    <circle cx="683" cy="179" r="7" fill="#3d2b1f"/>
+    <circle cx="651" cy="177" r="2.5" fill="#fff"/>
+    <circle cx="685" cy="177" r="2.5" fill="#fff"/>
+    <!-- Eyebrows -->
+    <path d="M639,164 Q648,158 657,164" stroke="#3d2b1f" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M673,164 Q682,158 691,164" stroke="#3d2b1f" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <!-- Blush -->
+    <ellipse cx="628" cy="192" rx="14" ry="8" fill="#f582ae" opacity="0.28"/>
+    <ellipse cx="702" cy="192" rx="14" ry="8" fill="#f582ae" opacity="0.28"/>
+    <!-- Smile -->
+    <path d="M648,198 Q665,212 682,198" stroke="#c0554a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- ===== DOG (front-left, large, running toward viewer) ===== -->
+  <g id="dog">
+    <!-- Ground shadow -->
+    <ellipse cx="295" cy="480" rx="100" ry="19" fill="#b89070" opacity="0.38"/>
+    <!-- Tail (wagging up-behind) -->
+    <path d="M345,250 Q295,175 272,128 Q258,100 275,90 Q298,82 310,110 Q328,150 365,228"
+          stroke="#e8a84c" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <ellipse cx="272" cy="92" rx="18" ry="13" fill="#f5c878" transform="rotate(-30,272,92)"/>
+    <!-- Body -->
+    <ellipse cx="330" cy="295" rx="88" ry="112" fill="#e8a84c" transform="rotate(-12,330,295)"/>
+    <!-- Belly -->
+    <ellipse cx="318" cy="325" rx="54" ry="72" fill="#f5c878" transform="rotate(-12,318,325)"/>
+    <!-- Back legs (small, receding) -->
+    <path d="M395,320 Q418,372 410,410" stroke="#c87830" stroke-width="30" fill="none" stroke-linecap="round"/>
+    <ellipse cx="410" cy="412" rx="23" ry="15" fill="#c87830"/>
+    <path d="M365,355 Q390,406 378,438" stroke="#c87830" stroke-width="28" fill="none" stroke-linecap="round"/>
+    <ellipse cx="377" cy="440" rx="23" ry="15" fill="#c87830"/>
+    <!-- Front legs (large, toward viewer) -->
+    <path d="M268,345 Q238,400 228,455" stroke="#e8a84c" stroke-width="35" fill="none" stroke-linecap="round"/>
+    <ellipse cx="227" cy="458" rx="32" ry="21" fill="#e8a84c"/>
+    <ellipse cx="211" cy="466" rx="13" ry="10" fill="#c87830"/>
+    <ellipse cx="227" cy="471" rx="13" ry="10" fill="#c87830"/>
+    <ellipse cx="243" cy="466" rx="13" ry="10" fill="#c87830"/>
+    <path d="M345,348 Q372,402 366,458" stroke="#e8a84c" stroke-width="35" fill="none" stroke-linecap="round"/>
+    <ellipse cx="366" cy="460" rx="32" ry="21" fill="#e8a84c"/>
+    <ellipse cx="350" cy="468" rx="13" ry="10" fill="#c87830"/>
+    <ellipse cx="366" cy="473" rx="13" ry="10" fill="#c87830"/>
+    <ellipse cx="382" cy="468" rx="13" ry="10" fill="#c87830"/>
+    <!-- Neck -->
+    <ellipse cx="298" cy="228" rx="58" ry="48" fill="#e8a84c"/>
+    <!-- Head (large) -->
+    <circle cx="290" cy="168" r="84" fill="#e8a84c"/>
+    <!-- Ears (floppy) -->
+    <ellipse cx="214" cy="178" rx="32" ry="56" fill="#c87830" transform="rotate(-18,214,178)"/>
+    <ellipse cx="365" cy="174" rx="32" ry="56" fill="#c87830" transform="rotate(18,365,174)"/>
+    <!-- Muzzle -->
+    <ellipse cx="290" cy="188" rx="48" ry="38" fill="#f5c878"/>
+    <!-- Nose -->
+    <ellipse cx="290" cy="170" rx="24" ry="18" fill="#2c1a0e"/>
+    <ellipse cx="282" cy="164" rx="8" ry="6" fill="#4a3020" opacity="0.45"/>
+    <!-- Eyes -->
+    <circle cx="248" cy="147" r="24" fill="#fff"/>
+    <circle cx="332" cy="147" r="24" fill="#fff"/>
+    <circle cx="251" cy="149" r="16" fill="#3d2b1f"/>
+    <circle cx="335" cy="149" r="16" fill="#3d2b1f"/>
+    <circle cx="245" cy="143" r="6" fill="#fff"/>
+    <circle cx="329" cy="143" r="6" fill="#fff"/>
+    <!-- Eyebrows (happy) -->
+    <path d="M232,128 Q248,120 265,128" stroke="#c87830" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <path d="M315,128 Q332,120 349,128" stroke="#c87830" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <!-- Tongue (out, happy) -->
+    <path d="M268,202 Q290,222 312,202" fill="#ff8c69"/>
+    <ellipse cx="290" cy="215" rx="22" ry="17" fill="#ff6b6b"/>
+    <path d="M278,216 Q290,225 302,216" stroke="#d44" stroke-width="2" fill="none"/>
+    <!-- Collar -->
+    <path d="M225,240 Q290,258 355,240" stroke="#f582ae" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <circle cx="290" cy="253" r="11" fill="#ffd700"/>
+    <!-- Motion lines -->
+    <path d="M182,205 L145,200" stroke="#f5c878" stroke-width="3.5" opacity="0.55" stroke-linecap="round"/>
+    <path d="M178,228 L138,228" stroke="#f5c878" stroke-width="3.5" opacity="0.55" stroke-linecap="round"/>
+    <path d="M180,252 L142,256" stroke="#f5c878" stroke-width="3.5" opacity="0.55" stroke-linecap="round"/>
+  </g>
+
+  <!-- ===== CAT (front-right, large, leaping toward viewer) ===== -->
+  <g id="cat">
+    <!-- Ground shadow -->
+    <ellipse cx="900" cy="480" rx="88" ry="17" fill="#b89070" opacity="0.38"/>
+    <!-- Tail (long, curving elegantly up) -->
+    <path d="M875,285 Q818,222 838,155 Q852,112 895,108 Q925,110 920,142 Q905,168 875,182 Q852,198 860,242 Q866,268 882,290"
+          stroke="#e87c3e" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <ellipse cx="897" cy="108" rx="16" ry="11" fill="#f5a040" transform="rotate(10,897,108)"/>
+    <!-- Body -->
+    <ellipse cx="900" cy="305" rx="78" ry="105" fill="#e87c3e" transform="rotate(8,900,305)"/>
+    <!-- Belly -->
+    <ellipse cx="895" cy="325" rx="48" ry="68" fill="#f5a878"/>
+    <!-- Body stripes -->
+    <path d="M845,275 Q878,268 918,278" stroke="#c85a1e" stroke-width="5" fill="none" opacity="0.45" stroke-linecap="round"/>
+    <path d="M842,300 Q876,292 920,304" stroke="#c85a1e" stroke-width="5" fill="none" opacity="0.45" stroke-linecap="round"/>
+    <path d="M848,326 Q876,318 918,330" stroke="#c85a1e" stroke-width="5" fill="none" opacity="0.45" stroke-linecap="round"/>
+    <!-- Back legs (extended back/up - leaping) -->
+    <path d="M948,355 Q984,314 990,278" stroke="#c85a1e" stroke-width="27" fill="none" stroke-linecap="round"/>
+    <ellipse cx="990" cy="274" rx="22" ry="15" fill="#c85a1e"/>
+    <path d="M928,385 Q958,358 965,328" stroke="#c85a1e" stroke-width="26" fill="none" stroke-linecap="round"/>
+    <ellipse cx="965" cy="324" rx="21" ry="14" fill="#c85a1e"/>
+    <!-- Front legs (large, toward viewer) -->
+    <path d="M855,355 Q828,408 822,458" stroke="#e87c3e" stroke-width="32" fill="none" stroke-linecap="round"/>
+    <ellipse cx="821" cy="460" rx="30" ry="19" fill="#e87c3e"/>
+    <ellipse cx="806" cy="468" rx="12" ry="9" fill="#c85a1e"/>
+    <ellipse cx="821" cy="473" rx="12" ry="9" fill="#c85a1e"/>
+    <ellipse cx="836" cy="468" rx="12" ry="9" fill="#c85a1e"/>
+    <path d="M928,348 Q956,402 950,455" stroke="#e87c3e" stroke-width="32" fill="none" stroke-linecap="round"/>
+    <ellipse cx="950" cy="457" rx="30" ry="19" fill="#e87c3e"/>
+    <ellipse cx="935" cy="465" rx="12" ry="9" fill="#c85a1e"/>
+    <ellipse cx="950" cy="470" rx="12" ry="9" fill="#c85a1e"/>
+    <ellipse cx="965" cy="465" rx="12" ry="9" fill="#c85a1e"/>
+    <!-- Neck -->
+    <ellipse cx="910" cy="228" rx="53" ry="44" fill="#e87c3e"/>
+    <!-- Head (large) -->
+    <circle cx="908" cy="172" r="75" fill="#e87c3e"/>
+    <!-- Ears -->
+    <polygon points="848,122 832,62 884,104" fill="#e87c3e"/>
+    <polygon points="851,120 840,74 880,106" fill="#f582ae"/>
+    <polygon points="968,118 988,60 932,100" fill="#e87c3e"/>
+    <polygon points="965,117 982,64 935,102" fill="#f582ae"/>
+    <!-- Muzzle -->
+    <ellipse cx="908" cy="188" rx="42" ry="32" fill="#f5a878"/>
+    <!-- Nose -->
+    <polygon points="908,172 896,183 920,183" fill="#e55a7a"/>
+    <!-- Mouth -->
+    <path d="M895,190 Q908,202 921,190" stroke="#c85a1e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M908,190 L908,202" stroke="#c85a1e" stroke-width="2.5" fill="none"/>
+    <!-- Whiskers -->
+    <line x1="860" y1="184" x2="895" y2="180" stroke="#fff" stroke-width="2.5" opacity="0.88"/>
+    <line x1="857" y1="194" x2="895" y2="192" stroke="#fff" stroke-width="2.5" opacity="0.88"/>
+    <line x1="860" y1="204" x2="895" y2="198" stroke="#fff" stroke-width="2.5" opacity="0.88"/>
+    <line x1="921" y1="180" x2="956" y2="184" stroke="#fff" stroke-width="2.5" opacity="0.88"/>
+    <line x1="921" y1="192" x2="959" y2="194" stroke="#fff" stroke-width="2.5" opacity="0.88"/>
+    <line x1="921" y1="198" x2="956" y2="204" stroke="#fff" stroke-width="2.5" opacity="0.88"/>
+    <!-- Eyes (large, excited) -->
+    <circle cx="875" cy="157" r="26" fill="#fff"/>
+    <circle cx="941" cy="157" r="26" fill="#fff"/>
+    <circle cx="877" cy="159" r="18" fill="#2eb5a0"/>
+    <circle cx="943" cy="159" r="18" fill="#2eb5a0"/>
+    <ellipse cx="877" cy="159" rx="9" ry="15" fill="#1a1a2e"/>
+    <ellipse cx="943" cy="159" rx="9" ry="15" fill="#1a1a2e"/>
+    <circle cx="871" cy="151" r="6" fill="#fff"/>
+    <circle cx="937" cy="151" r="6" fill="#fff"/>
+    <!-- Eyebrows (surprised, raised) -->
+    <path d="M857,136 Q875,126 893,133" stroke="#c85a1e" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M923,133 Q941,126 959,136" stroke="#c85a1e" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- Forehead stripes -->
+    <path d="M896,107 L899,132" stroke="#c85a1e" stroke-width="3.5" opacity="0.55"/>
+    <path d="M908,104 L908,130" stroke="#c85a1e" stroke-width="3.5" opacity="0.55"/>
+    <path d="M920,107 L917,132" stroke="#c85a1e" stroke-width="3.5" opacity="0.55"/>
+    <!-- Collar -->
+    <path d="M855,232 Q908,250 961,232" stroke="#4a90d9" stroke-width="13" fill="none" stroke-linecap="round"/>
+    <circle cx="908" cy="246" r="10" fill="#ffd700"/>
+    <!-- Motion lines -->
+    <path d="M1012,255 L1050,250" stroke="#f5a878" stroke-width="3.5" opacity="0.55" stroke-linecap="round"/>
+    <path d="M1015,277 L1055,280" stroke="#f5a878" stroke-width="3.5" opacity="0.55" stroke-linecap="round"/>
+    <path d="M1010,300 L1050,306" stroke="#f5a878" stroke-width="3.5" opacity="0.55" stroke-linecap="round"/>
+  </g>
+
+  <!-- Paw print trail from dog -->
+  <g fill="#c87830" opacity="0.18">
+    <circle cx="450" cy="468" r="9"/><circle cx="440" cy="456" r="6"/><circle cx="450" cy="451" r="6"/><circle cx="460" cy="456" r="6"/>
+    <circle cx="488" cy="474" r="8"/><circle cx="479" cy="463" r="5"/><circle cx="488" cy="458" r="5"/><circle cx="497" cy="463" r="5"/>
+  </g>
+  <!-- Paw print trail from cat -->
+  <g fill="#c85a1e" opacity="0.18">
+    <circle cx="758" cy="465" r="9"/><circle cx="748" cy="453" r="6"/><circle cx="758" cy="448" r="6"/><circle cx="768" cy="453" r="6"/>
+    <circle cx="794" cy="471" r="8"/><circle cx="785" cy="460" r="5"/><circle cx="794" cy="455" r="5"/><circle cx="803" cy="460" r="5"/>
+  </g>
+</svg>
