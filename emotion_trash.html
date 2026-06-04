@@ -458,7 +458,8 @@ function translateError(msg) {
     if (msg.includes('Email not confirmed'))        return '이메일 인증이 필요해요. 받은 편지함을 확인해주세요.';
     if (msg.includes('Password should be at least'))return '비밀번호는 6자 이상이어야 해요.';
     if (msg.includes('Unable to validate email'))   return '올바른 이메일 형식이 아니에요.';
-    if (msg.includes('fetch') || msg.includes('Failed')) return 'Supabase URL/Key를 확인해주세요.';
+    if (msg.includes('Project not active') || msg.includes('project_not_active')) return '⚠️ Supabase 프로젝트가 일시 정지됐어요. supabase.com 대시보드에서 프로젝트를 재시작(Restore)해주세요.';
+    if (msg.includes('fetch') || msg.includes('Failed') || msg.includes('NetworkError') || msg.includes('Load failed')) return '⚠️ 서버에 연결할 수 없어요. Supabase 프로젝트가 일시 정지됐을 수 있어요 → supabase.com에서 확인해주세요.';
     return msg;
 }
 
