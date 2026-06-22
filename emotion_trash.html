@@ -11,11 +11,13 @@
 
         body {
             min-height: 100vh;
+            min-height: 100dvh;
             background: linear-gradient(160deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%);
             font-family: 'Noto Sans KR', sans-serif;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            overflow: hidden; position: relative;
+            overflow-x: hidden; position: relative;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
@@ -68,7 +70,7 @@
             background: linear-gradient(135deg,#667eea,#764ba2);
             color: white; border: none; border-radius: 12px;
             font-family: 'Noto Sans KR', sans-serif; font-size: .92rem; font-weight: 600;
-            cursor: pointer; transition: all .2s;
+            cursor: pointer; transition: all .2s; touch-action: manipulation;
             box-shadow: 0 4px 18px rgba(102,126,234,.4);
         }
         .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(102,126,234,.5); }
@@ -124,6 +126,7 @@
             color: white; border: none; border-radius: 25px;
             font-size: .9rem; font-weight: 600; cursor: pointer;
             font-family: 'Noto Sans KR',sans-serif; transition: all .2s;
+            touch-action: manipulation;
             box-shadow: 0 4px 16px rgba(230,126,34,.45);
         }
         .crumple-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,126,34,.55); }
@@ -212,9 +215,50 @@
         @keyframes spin { to{transform:rotate(360deg)} }
 
         @media (max-width:600px) {
-            .main-layout { flex-direction:column; gap:2.5rem; }
-            .title-area h1 { font-size:1.5rem; }
-            .auth-card { width:90vw; padding:28px 22px 24px; }
+            body { overflow-y: auto; }
+
+            /* 인증 */
+            .auth-card { width: 92vw; padding: 28px 20px 24px; }
+            .auth-input { font-size: 16px; } /* iOS 자동 확대 방지 */
+
+            /* 상단 바 */
+            .user-bar { top: 12px; right: 12px; gap: 6px; }
+            .user-email { max-width: 110px; font-size: .68rem; }
+            .logout-btn { padding: 5px 10px; font-size: .7rem; }
+
+            /* 타이틀 */
+            .title-area { margin-bottom: 1.2rem; padding: 0 16px; }
+            .title-area h1 { font-size: 1.35rem; }
+            .title-area p  { font-size: .75rem; }
+
+            /* 메인 화면 */
+            #mainScreen { padding: 56px 0 90px; width: 100%; }
+            .main-layout { flex-direction: column; gap: 1.8rem; width: 100%; align-items: center; }
+
+            /* 포스트잇 */
+            .postit-area { gap: 12px; }
+            #postit { width: min(255px, 82vw); height: min(255px, 82vw); }
+
+            /* 쓰레기통 */
+            #trashCanSvg { width: 88px; height: 110px; }
+            .trash-section { gap: 8px; }
+
+            /* 하단 버튼 - 아이폰 홈바 안전 영역 */
+            .history-btn {
+                bottom: calc(16px + env(safe-area-inset-bottom));
+                right: 16px; padding: 10px 18px;
+            }
+            #dragHint {
+                bottom: calc(68px + env(safe-area-inset-bottom));
+                font-size: .72rem; white-space: normal;
+                text-align: center; width: 90%;
+            }
+        }
+
+        @media (max-width:380px) {
+            #postit { width: 76vw; height: 76vw; }
+            .title-area h1 { font-size: 1.2rem; }
+            .main-layout { gap: 1.4rem; }
         }
     </style>
 </head>
